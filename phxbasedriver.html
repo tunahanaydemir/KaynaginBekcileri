@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHX Pyro Fuel</title>
+    <!-- Dependencies: aes-js for AES-ECB support (Web Crypto API does not support ECB) -->
+    <script src="https://cdn.jsdelivr.net/npm/aes-js@3.1.2/index.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0f;
+            color: #ccccdd;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #header {
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        #title {
+            color: #FF6B00;
+            font-size: 44px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #subtitle {
+            color: #555566;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #FF6B00;
+            margin: 20px 60px;
+        }
+
+        #content-area {
+            flex-grow: 1;
+            position: relative;
+            padding: 0 60px;
+        }
+
+        /* IDLE SCREEN */
+        #idle-frame {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        #hex-icon {
+            font-size: 120px;
+            color: #1a1a2e;
+        }
+
+        #idle-text {
+            font-size: 24px;
+            color: #333344;
+            margin-top: -20px;
+        }
+
+        /* PRESENTATION SCREEN */
+        #pres-frame {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        #pres-icon {
+            font-size: 100px;
+            margin-top: 20px;
+        }
+
+        #pres-name {
+            font-size: 60px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        #pres-desc {
+            font-size: 22px;
+            color: #aaaacc;
+            max-width: 800px;
+            line-height: 1.4;
+        }
+
+        .pres-line {
+            height: 1px;
+            width: 100%;
+            margin: 30px 0;
+        }
+
+        #pres-specs {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .spec-row {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            margin: 5px 0;
+        }
+
+        .spec-bullet {
+            margin-right: 10px;
+        }
+
+        /* FOOTER */
+        #footer {
+            text-align: center;
+            padding-bottom: 20px;
+            font-size: 14px;
+            color: #333344;
+        }
+
+        #status-bar {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #444455;
+        }
+
+        #connect-btn {
+            background: #1a1a2e;
+            color: #FF6B00;
+            border: 1px solid #FF6B00;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #connect-btn:hover {
+            background: #FF6B00;
+            color: #0a0a0f;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <p id="title">PHX PYRO FUEL</p>
+        <p id="subtitle">Okyanusdan Enerji — Atıktan Yakıt</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div id="content-area">
+        <!-- IDLE Frame -->
+        <div id="idle-frame">
+            <div id="hex-icon">⬡</div>
+            <div id="idle-text">Figürü base'e yerleştirin</div>
+            <button id="connect-btn">Base'e Bağlan</button>
+        </div>
+
+        <!-- Presentation Frame -->
+        <div id="pres-frame">
+            <div id="pres-icon"></div>
+            <div id="pres-name"></div>
+            <div id="pres-desc"></div>
+            <div id="pres-line" class="pres-line"></div>
+            <div id="pres-specs"></div>
+            <div style="flex-grow: 1;"></div>
+            <div id="footer">PHX Pyro Fuel — GençBizz 2025</div>
+        </div>
+    </div>
+
+    <div id="status-bar">Bağlantı bekleniyor...</div>
+
+    <script>
+        // --- CONSTANTS ---
+        const SHA1_CONSTANT = new Uint8Array([
+            0xAF, 0x62, 0xD2, 0xEC, 0x04, 0x91, 0x96, 0x8C, 0xC5, 0x2A, 0x1A, 0x71, 0x65, 0xF8, 0x65, 0xFE,
+            0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33
+        ]);
+
+        const COMPONENTS = {
+            0xc52257: {
+                "name": "Kondenser",
+                "color": "#00BFFF",
+                "rgb": [0, 191, 255],
+                "icon": "❄️",
+                "desc": "Piroliz gazlarını soğutarak sıvı yakıta dönüştürür.",
+                "specs": [
+                    "Soğutma kapasitesi: 50 kW",
+                    "Çıkış sıcaklığı: 40°C",
+                    "Verim: %92",
+                    "Malzeme: Paslanmaz çelik",
+                ]
+            },
+            0x4cd171: {
+                "name": "Vidalı Konveyör",
+                "color": "#FFD700",
+                "rgb": [255, 215, 0],
+                "icon": "⚙️",
+                "desc": "Plastik atıkları reaktöre besleyen vida mekanizması.",
+                "specs": [
+                    "Kapasite: 10 kg/saat",
+                    "Vida çapı: 80 mm",
+                    "Motor gücü: 1.5 kW",
+                    "Malzeme: S235 Çelik",
+                ]
+            },
+            0x7a376a: {
+                "name": "Vidalı Konveyör",
+                "color": "#FFD700",
+                "rgb": [255, 215, 0],
+                "icon": "⚙️",
+                "desc": "Plastik atıkları reaktöre besleyen vida mekanizması.",
+                "specs": [
+                    "Kapasite: 10 kg/saat",
+                    "Vida çapı: 80 mm",
+                    "Motor gücü: 1.5 kW",
+                    "Malzeme: S235 Çelik",
+                ]
+            },
+            0x9981f8: {
+                "name": "Piroliz Reaktörü",
+                "color": "#CC0000",
+                "rgb": [204, 0, 0],
+                "icon": "🔥",
+                "desc": "Plastiği oksijensiz ortamda ısıtarak gaz ve yağa dönüştürür.",
+                "specs": [
+                    "Çalışma sıcaklığı: 400-500°C",
+                    "Kapasite: 5 kg/saat",
+                    "Basınç: Atmosferik",
+                    "Malzeme: Refrakter çelik",
+                ]
+            },
+            0xebe124: {
+                "name": "NCG Geri Besleme",
+                "color": "#00CC00",
+                "rgb": [0, 204, 0],
+                "icon": "♻️",
+                "desc": "Yoğunlaşmayan gazları reaktöre geri göndererek enerji tasarrufu sağlar.",
+                "specs": [
+                    "Gaz debisi: 2 m³/saat",
+                    "Boru çapı: 25 mm",
+                    "Vana tipi: Solenoid",
+                    "Kontrol: Otomatik",
+                ]
+            },
+            0x1ac5a4: {
+                "name": "Depolama Tankı",
+                "color": "#8B00FF",
+                "rgb": [139, 0, 255],
+                "icon": "🛢️",
+                "desc": "Üretilen düşük kükürtlü yakıt yağını depolar.",
+                "specs": [
+                    "Hacim: 200 litre",
+                    "Malzeme: HDPE",
+                    "Çalışma basıncı: Atmosferik",
+                    "Çıkış vanası: El kumandası",
+                ]
+            },
+        };
+
+        const RED = [204, 0, 0];
+
+        // --- COMMUNICATION CLASS ---
+        class InfinityComms {
+            constructor(device) {
+                this.device = device;
+                this.messageNumber = 0;
+                this.isLocked = false;
+                this.pendingResponse = null;
+
+                // Setup listener for reports
+                this.device.oninputreport = (event) => {
+                    this.pendingResponse = new Uint8Array(event.data.buffer);
+                };
+            }
+
+            nextId() {
+                this.messageNumber = (this.messageNumber + 1) % 256;
+                return this.messageNumber;
+            }
+
+            async acquireLock() {
+                while (this.isLocked) await new Promise(r => setTimeout(r, 10));
+                this.isLocked = true;
+            }
+
+            releaseLock() {
+                this.isLocked = false;
+            }
+
+            async sendRecv(command, data = []) {
+                await this.acquireLock();
+                try {
+                    const msgId = this.nextId();
+                    const body = [command, msgId, ...data];
+                    const packet = new Uint8Array(33);
+                    packet[0] = 0x00; // Report ID
+                    packet[1] = 0xff;
+                    packet[2] = body.length;
+                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
+
+                    let checksum = 0;
+                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
+                    packet[3 + body.length] = checksum & 0xff;
+
+                    this.pendingResponse = null;
+                    await this.device.sendReport(0x00, packet.slice(1));
+
+                    // Read with timeout (approx 30 loops * 300ms = 9s, matching python 30 * 300)
+                    for (let i = 0; i < 30; i++) {
+                        if (this.pendingResponse) {
+                            const resp = this.pendingResponse;
+                            if (resp[0] === 0xaa && resp[2] === msgId) {
+                                return Array.from(resp);
+                            }
+                        }
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                    return null;
+                } finally {
+                    this.releaseLock();
+                }
+            }
+
+            async sendOnly(command, data = []) {
+                await this.acquireLock();
+                try {
+                    const msgId = this.nextId();
+                    const body = [command, msgId, ...data];
+                    const packet = new Uint8Array(33);
+                    packet[0] = 0x00;
+                    packet[1] = 0xff;
+                    packet[2] = body.length;
+                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
+
+                    let checksum = 0;
+                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
+                    packet[3 + body.length] = checksum & 0xff;
+
+                    await this.device.sendReport(0x00, packet.slice(1));
+                } finally {
+                    this.releaseLock();
+                }
+            }
+        }
+
+        // --- UTILS ---
+        async function deriveKey(uid) {
+            const sha1Calc = new Uint8Array(38);
+            sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
+            sha1Calc.set(uid.slice(0, 7), 31);
+
+            const hashBuffer = await crypto.subtle.digest('SHA-1', sha1Calc);
+            const sha1Out = new Uint8Array(hashBuffer);
+
+            const key = new Uint8Array(16);
+            for (let i = 0; i < 4; i++) {
+                for (let x = 0; x < 4; x++) {
+                    key[x + (i * 4)] = sha1Out[(3 - x) + (i * 4)];
+                }
+            }
+            return key;
+        }
+
+        async function readFigureId(comms, order) {
+            try {
+                const resp = await comms.sendRecv(0xB4, [order]);
+                if (!resp) return null;
+                const uid = resp.slice(4, 11);
+                const key = await deriveKey(uid);
+                
+                const resp2 = await comms.sendRecv(0xA2, [order, 0x00, 0x01]);
+                if (!resp2) return null;
+                const blockData = resp2.slice(4, 20);
+
+                // Use aes-js for ECB decryption
+                const aesEcb = new aesjs.ModeOfOperation.ecb(key);
+                const dec = aesEcb.decrypt(new Uint8Array(blockData));
+                
+                const figId = (dec[1] << 16) | (dec[2] << 8) | dec[3];
+                return figId;
+            } catch (e) {
+                console.error("ID Read Error:", e);
+                return null;
+            }
+        }
+
+        // --- LIGHT CONTROLLER ---
+        class LightController {
+            constructor(comms) {
+                this.comms = comms;
+                this.currentRgb = RED;
+                this.interval = null;
+            }
+
+            setColor(rgb) {
+                this.currentRgb = rgb;
+            }
+
+            start() {
+                this.interval = setInterval(async () => {
+                    const [r, g, b] = this.currentRgb;
+                    try {
+                        await this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
+                        await this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
+                    } catch (e) {}
+                }, 2500);
+            }
+
+            stop() {
+                if (this.interval) clearInterval(this.interval);
+            }
+        }
+
+        // --- APP LOGIC ---
+        class PyroApp {
+            constructor() {
+                this.comms = null;
+                this.light = null;
+                this.running = true;
+
+                this.ui = {
+                    idleFrame: document.getElementById('idle-frame'),
+                    presFrame: document.getElementById('pres-frame'),
+                    presIcon: document.getElementById('pres-icon'),
+                    presName: document.getElementById('pres-name'),
+                    presDesc: document.getElementById('pres-desc'),
+                    presLine: document.getElementById('pres-line'),
+                    presSpecs: document.getElementById('pres-specs'),
+                    statusBar: document.getElementById('status-bar'),
+                    connectBtn: document.getElementById('connect-btn')
+                };
+
+                this.ui.connectBtn.onclick = () => this.connectBase();
+            }
+
+            setStatus(msg) {
+                this.ui.statusBar.innerText = msg;
+            }
+
+            showIdle() {
+                this.ui.presFrame.style.display = 'none';
+                this.ui.idleFrame.style.display = 'flex';
+            }
+
+            showComponent(figId) {
+                const comp = COMPONENTS[figId];
+                if (!comp) return;
+
+                this.ui.presIcon.innerText = comp.icon;
+                this.ui.presIcon.style.color = comp.color;
+                this.ui.presName.innerText = comp.name;
+                this.ui.presName.style.color = comp.color;
+                this.ui.presDesc.innerText = comp.desc;
+                this.ui.presLine.style.backgroundColor = comp.color;
+
+                this.ui.presSpecs.innerHTML = '';
+                comp.specs.forEach(spec => {
+                    const row = document.createElement('div');
+                    row.className = 'spec-row';
+                    row.innerHTML = `<span class="spec-bullet" style="color:${comp.color}">▸ </span><span>${spec}</span>`;
+                    this.ui.presSpecs.appendChild(row);
+                });
+
+                this.ui.idleFrame.style.display = 'none';
+                this.ui.presFrame.style.display = 'flex';
+            }
+
+            async connectBase() {
+                try {
+                    const devices = await navigator.hid.requestDevice({
+                        filters: [{ vendorId: 0x0e6f, productId: 0x0129 }]
+                    });
+
+                    if (devices.length === 0) return;
+
+                    const device = devices[0];
+                    await device.open();
+
+                    this.comms = new InfinityComms(device);
+                    
+                    // Init Sequence
+                    await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
+                    
+                    this.light = new LightController(this.comms);
+                    this.light.start();
+                    
+                    this.setStatus("Base bağlı ✓");
+                    this.ui.connectBtn.style.display = 'none';
+                    
+                    this.baseLoop();
+                } catch (e) {
+                    console.error(e);
+                    this.setStatus("Bağlantı hatası: " + e.message);
+                }
+            }
+
+            async baseLoop() {
+                while (this.running) {
+                    if (!this.comms || !this.comms.pendingResponse) {
+                        await new Promise(r => setTimeout(r, 100));
+                        continue;
+                    }
+
+                    try {
+                        const resp = this.comms.pendingResponse;
+                        this.comms.pendingResponse = null; // Consume
+
+                        if (resp.length < 6 || resp[0] !== 0xab) continue;
+
+                        const position = resp[2];
+                        const order = resp[4];
+                        const action = resp[5];
+
+                        // Slot 3 (right)
+                        if (position !== 3) continue;
+
+                        if (action === 0x00) {
+                            await new Promise(r => setTimeout(r, 200));
+                            const figId = await readFigureId(this.comms, order);
+                            
+                            this.setStatus(`ID: ${figId ? '0x' + figId.toString(16) : 'None'}`);
+
+                            if (figId && COMPONENTS[figId]) {
+                                if (this.light) this.light.setColor(COMPONENTS[figId].rgb);
+                                this.showComponent(figId);
+                            }
+                        } else {
+                            // Figure removed
+                            if (this.light) this.light.setColor(RED);
+                            this.showIdle();
+                        }
+                    } catch (e) {
+                        this.setStatus(`Hata: ${e.message}`);
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                }
+            }
+        }
+
+        // Initialize App
+        window.onload = () => {
+            if (!navigator.hid) {
+                document.getElementById('status-bar').innerText = "Hata: Tarayıcınız WebHID API desteklemiyor (Chrome/Edge kullanın).";
+                document.getElementById('connect-btn').disabled = true;
+            } else {
+                new PyroApp();
+            }
+        };
+    </script>
+</body>
+</html>
