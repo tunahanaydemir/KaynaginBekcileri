@@ -148,6 +148,31 @@
             background: #FF6B00;
             color: #0a0a0f;
         }
+        
+        <a href="index.html" class="home-btn">ANA SAYFA</a>
+
+        }
+
+        .home-btn {
+    /* 1. Konumlandırma */
+    position: fixed;     /* Sayfayı kaydırsan da orada sabit kalsın */
+    top: 20px;           /* Üstten 20px boşluk */
+    left: 20px;          /* Soldan 20px boşluk */
+    z-index: 9999;       /* Diğer her şeyin üstünde görünsün */
+
+    /* 2. Görünüm */
+    background-color: #FF6B00; /* Senin sitenin turuncusu */
+    color: #0a0a0f;           /* Yazı rengi siyah/koyu */
+    padding: 10px 20px;       /* Butonu şişir (İç boşluk) */
+    text-decoration: none;    /* Altındaki çizgiyi kaldır */
+    font-weight: bold;        /* Yazıyı kalın yap */
+    border-radius: 5px;       /* Köşeleri hafif yuvarla */
+}
+
+.home-btn:hover {
+    background-color: #fff;   /* Fare üstüne gelince beyaza dönsün */
+}
+
     </style>
 </head>
 <body>
