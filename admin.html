@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin System</title>
+    <script src="https://cdn.jsdelivr.net/npm/aes-js@3.1.2/index.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0f;
+            color: #ccccdd;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* --- ADMIN LOCK SCREEN --- */
+        #admin-lock {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #lock-box {
+            text-align: center;
+            border: 1px solid #333344;
+            padding: 40px;
+            background: #0d0d14;
+        }
+
+        #admin-lock input {
+            background: #1a1a2e;
+            border: 1px solid #FF6B00;
+            color: #FF6B00;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+            width: 200px;
+        }
+
+        #admin-lock button {
+            background: #FF6B00;
+            color: #0a0a0f;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            transition: 0.3s;
+        }
+
+        #admin-lock button:hover {
+            background: #e65a00;
+        }
+
+        /* --- MAIN UI --- */
+        #header {
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        #title {
+            color: #FF6B00;
+            font-size: 44px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #subtitle {
+            color: #555566;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #FF6B00;
+            margin: 20px 60px;
+        }
+
+        #content-area {
+            flex-grow: 1;
+            position: relative;
+            padding: 0 60px;
+        }
+
+        #idle-frame {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        #hex-icon {
+            font-size: 120px;
+            color: #1a1a2e;
+        }
+
+        #idle-text {
+            font-size: 24px;
+            color: #333344;
+            margin-top: -20px;
+        }
+
+        #pres-frame {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        #pres-icon {
+            font-size: 100px;
+            margin-top: 20px;
+        }
+
+        #pres-name {
+            font-size: 60px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        #pres-desc {
+            font-size: 22px;
+            color: #aaaacc;
+            max-width: 800px;
+            line-height: 1.4;
+        }
+
+        .pres-line {
+            height: 1px;
+            width: 100%;
+            margin: 30px 0;
+        }
+
+        #pres-specs {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .spec-row {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            margin: 5px 0;
+        }
+
+        .spec-bullet {
+            margin-right: 10px;
+        }
+
+        #status-bar {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #444455;
+        }
+
+        #connect-btn {
+            background: #1a1a2e;
+            color: #FF6B00;
+            border: 1px solid #FF6B00;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #footer {
+            text-align: center;
+            padding-bottom: 20px;
+            font-size: 14px;
+            color: #333344;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="admin-lock">
+        <div id="lock-box">
+            <p style="color: #FF6B00; font-size: 24px; margin-bottom: 20px;">Admin Access</p>
+            <input type="password" id="pass-input" placeholder="ACCESS KEY">
+            <br>
+            <button onclick="checkPass()">LOGIN</button>
+            <p id="error-msg" style="color: #ff4444; margin-top: 15px; font-size: 14px; display: none;">ACCESS DENIED: INVALID KEY</p>
+        </div>
+    </div>
+
+    <div id="header">
+        <p id="title">PHX PYRO FUEL</p>
+        <p id="subtitle">Make Waste Fuel Again!</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div id="content-area">
+        <div id="idle-frame">
+            <div id="hex-icon">⬡</div>
+            <div id="idle-text">Figürü base'e yerleştirin</div>
+            <button id="connect-btn">Base'e Bağlan</button>
+        </div>
+
+        <div id="pres-frame">
+            <div id="pres-icon"></div>
+            <div id="pres-name"></div>
+            <div id="pres-desc"></div>
+            <div id="pres-line" class="pres-line"></div>
+            <div id="pres-specs"></div>
+            <div style="flex-grow: 1;"></div>
+            <div id="footer">PHX Pyro Fuel — GençBizz 2025</div>
+        </div>
+    </div>
+
+    <div id="status-bar">Bağlantı bekleniyor...</div>
+
+    <script>
+        // --- ADMIN LOGIN LOGIC ---
+        function checkPass() {
+            const pass = document.getElementById('pass-input').value;
+            const lockScreen = document.getElementById('admin-lock');
+            const errorMsg = document.getElementById('error-msg');
+
+            if (pass === "xlyn") {
+                lockScreen.style.transition = "0.5s";
+                lockScreen.style.opacity = "0";
+                setTimeout(() => {
+                    lockScreen.style.display = "none";
+                }, 500);
+            } else {
+                errorMsg.style.display = "block";
+                document.getElementById('pass-input').value = "";
+            }
+        }
+
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPass();
+            }
+        });
+
+        // --- ORIGINAL SYSTEM LOGIC ---
+        const SHA1_CONSTANT = new Uint8Array([
+            0xAF, 0x62, 0xD2, 0xEC, 0x04, 0x91, 0x96, 0x8C, 0xC5, 0x2A, 0x1A, 0x71, 0x65, 0xF8, 0x65, 0xFE,
+            0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33
+        ]);
+
+        const COMPONENTS = {
+            0xc52257: {
+                "name": "Kondenser",
+                "color": "#00BFFF",
+                "rgb": [0, 191, 255],
+                "icon": "❄️",
+                "desc": "Piroliz gazlarını soğutarak sıvı yakıta dönüştürür.",
+                "specs": ["Soğutma kapasitesi: 50 kW", "Çıkış sıcaklığı: 40°C", "Verim: %92", "Malzeme: Paslanmaz çelik"]
+            },
+            0x4cd171: {
+                "name": "Vidalı Konveyör",
+                "color": "#FFD700",
+                "rgb": [255, 215, 0],
+                "icon": "⚙️",
+                "desc": "Plastik atıkları reaktöre besleyen vida mekanizması.",
+                "specs": ["Kapasite: 10 kg/saat", "Vida çapı: 80 mm", "Motor gücü: 1.5 kW", "Malzeme: S235 Çelik"]
+            },
+            0x9981f8: {
+                "name": "Piroliz Reaktörü",
+                "color": "#CC0000",
+                "rgb": [204, 0, 0],
+                "icon": "🔥",
+                "desc": "Plastiği oksijensiz ortamda ısıtarak gaz ve yağa dönüştürür.",
+                "specs": ["Çalışma sıcaklığı: 400-500°C", "Kapasite: 5 kg/saat", "Basınç: Atmosferik", "Malzeme: Refrakter çelik"]
+            },
+            0xebe124: {
+                "name": "NCG Geri Besleme",
+                "color": "#00CC00",
+                "rgb": [0, 204, 0],
+                "icon": "♻️",
+                "desc": "Yoğunlaşmayan gazları reaktöre geri göndererek enerji tasarrufu sağlar.",
+                "specs": ["Gaz debisi: 2 m³/saat", "Boru çapı: 25 mm", "Vana tipi: Solenoid", "Kontrol: Otomatik"]
+            },
+            0x1ac5a4: {
+                "name": "Depolama Tankı",
+                "color": "#8B00FF",
+                "rgb": [139, 0, 255],
+                "icon": "🛢️",
+                "desc": "Üretilen düşük kükürtlü yakıt yağını depolar.",
+                "specs": ["Hacim: 200 litre", "Malzeme: HDPE", "Çalışma basıncı: Atmosferik", "Çıkış vanası: El kumandası"]
+            }
+        };
+
+        const RED = [204, 0, 0];
+
+        class InfinityComms {
+            constructor(device) {
+                this.device = device;
+                this.messageNumber = 0;
+                this.isLocked = false;
+                this.pendingResponse = null;
+                this.device.oninputreport = (event) => {
+                    this.pendingResponse = new Uint8Array(event.data.buffer);
+                };
+            }
+            nextId() { this.messageNumber = (this.messageNumber + 1) % 256; return this.messageNumber; }
+            async acquireLock() { while (this.isLocked) await new Promise(r => setTimeout(r, 10)); this.isLocked = true; }
+            releaseLock() { this.isLocked = false; }
+            async sendRecv(command, data = []) {
+                await this.acquireLock();
+                try {
+                    const msgId = this.nextId();
+                    const body = [command, msgId, ...data];
+                    const packet = new Uint8Array(33);
+                    packet[1] = 0xff;
+                    packet[2] = body.length;
+                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
+                    let checksum = 0;
+                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
+                    packet[3 + body.length] = checksum & 0xff;
+                    this.pendingResponse = null;
+                    await this.device.sendReport(0x00, packet.slice(1));
+                    for (let i = 0; i < 30; i++) {
+                        if (this.pendingResponse) {
+                            const resp = this.pendingResponse;
+                            if (resp[0] === 0xaa && resp[2] === msgId) return Array.from(resp);
+                        }
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                    return null;
+                } finally { this.releaseLock(); }
+            }
+            async sendOnly(command, data = []) {
+                await this.acquireLock();
+                try {
+                    const msgId = this.nextId();
+                    const body = [command, msgId, ...data];
+                    const packet = new Uint8Array(33);
+                    packet[1] = 0xff;
+                    packet[2] = body.length;
+                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
+                    let checksum = 0;
+                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
+                    packet[3 + body.length] = checksum & 0xff;
+                    await this.device.sendReport(0x00, packet.slice(1));
+                } finally { this.releaseLock(); }
+            }
+        }
+
+        async function deriveKey(uid) {
+            const sha1Calc = new Uint8Array(38);
+            sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
+            sha1Calc.set(uid.slice(0, 7), 31);
+            const hashBuffer = await crypto.subtle.digest('SHA-1', sha1Calc);
+            const sha1Out = new Uint8Array(hashBuffer);
+            const key = new Uint8Array(16);
+            for (let i = 0; i < 4; i++) {
+                for (let x = 0; x < 4; x++) key[x + (i * 4)] = sha1Out[(3 - x) + (i * 4)];
+            }
+            return key;
+        }
+
+        async function readFigureId(comms, order) {
+            try {
+                const resp = await comms.sendRecv(0xB4, [order]);
+                if (!resp) return null;
+                const uid = resp.slice(4, 11);
+                const key = await deriveKey(uid);
+                const resp2 = await comms.sendRecv(0xA2, [order, 0x00, 0x01]);
+                if (!resp2) return null;
+                const blockData = resp2.slice(4, 20);
+                const aesEcb = new aesjs.ModeOfOperation.ecb(key);
+                const dec = aesEcb.decrypt(new Uint8Array(blockData));
+                return (dec[1] << 16) | (dec[2] << 8) | dec[3];
+            } catch (e) { return null; }
+        }
+
+        class LightController {
+            constructor(comms) { this.comms = comms; this.currentRgb = RED; this.interval = null; }
+            setColor(rgb) { this.currentRgb = rgb; }
+            start() {
+                this.interval = setInterval(async () => {
+                    const [r, g, b] = this.currentRgb;
+                    try {
+                        await this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
+                        await this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
+                    } catch (e) {}
+                }, 2500);
+            }
+        }
+
+        class PyroApp {
+            constructor() {
+                this.comms = null; this.light = null; this.running = true;
+                this.ui = {
+                    idleFrame: document.getElementById('idle-frame'),
+                    presFrame: document.getElementById('pres-frame'),
+                    presIcon: document.getElementById('pres-icon'),
+                    presName: document.getElementById('pres-name'),
+                    presDesc: document.getElementById('pres-desc'),
+                    presLine: document.getElementById('pres-line'),
+                    presSpecs: document.getElementById('pres-specs'),
+                    statusBar: document.getElementById('status-bar'),
+                    connectBtn: document.getElementById('connect-btn')
+                };
+                this.ui.connectBtn.onclick = () => this.connectBase();
+            }
+            setStatus(msg) { this.ui.statusBar.innerText = msg; }
+            showIdle() { this.ui.presFrame.style.display = 'none'; this.ui.idleFrame.style.display = 'flex'; }
+            showComponent(figId) {
+                const comp = COMPONENTS[figId];
+                if (!comp) return;
+                this.ui.presIcon.innerText = comp.icon;
+                this.ui.presIcon.style.color = comp.color;
+                this.ui.presName.innerText = comp.name;
+                this.ui.presName.style.color = comp.color;
+                this.ui.presDesc.innerText = comp.desc;
+                this.ui.presLine.style.backgroundColor = comp.color;
+                this.ui.presSpecs.innerHTML = '';
+                comp.specs.forEach(spec => {
+                    const row = document.createElement('div');
+                    row.className = 'spec-row';
+                    row.innerHTML = `<span class="spec-bullet" style="color:${comp.color}">▸ </span><span>${spec}</span>`;
+                    this.ui.presSpecs.appendChild(row);
+                });
+                this.ui.idleFrame.style.display = 'none';
+                this.ui.presFrame.style.display = 'flex';
+            }
+            async connectBase() {
+                try {
+                    const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0e6f, productId: 0x0129 }] });
+                    if (devices.length === 0) return;
+                    const device = devices[0];
+                    await device.open();
+                    this.comms = new InfinityComms(device);
+                    await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
+                    this.light = new LightController(this.comms);
+                    this.light.start();
+                    this.setStatus("Base bağlı ✓");
+                    this.ui.connectBtn.style.display = 'none';
+                    this.baseLoop();
+                } catch (e) { this.setStatus("Bağlantı hatası: " + e.message); }
+            }
+            async baseLoop() {
+                while (this.running) {
+                    if (!this.comms || !this.comms.pendingResponse) { await new Promise(r => setTimeout(r, 100)); continue; }
+                    try {
+                        const resp = this.comms.pendingResponse;
+                        this.comms.pendingResponse = null;
+                        if (resp.length < 6 || resp[0] !== 0xab) continue;
+                        if (resp[2] !== 3) continue;
+                        if (resp[5] === 0x00) {
+                            await new Promise(r => setTimeout(r, 200));
+                            const figId = await readFigureId(this.comms, resp[4]);
+                            if (figId && COMPONENTS[figId]) {
+                                if (this.light) this.light.setColor(COMPONENTS[figId].rgb);
+                                this.showComponent(figId);
+                            }
+                        } else {
+                            if (this.light) this.light.setColor(RED);
+                            this.showIdle();
+                        }
+                    } catch (e) { await new Promise(r => setTimeout(r, 500)); }
+                }
+            }
+        }
+
+        window.onload = () => {
+            if (!navigator.hid) {
+                document.getElementById('status-bar').innerText = "Hata: Tarayıcınız WebHID desteklemiyor.";
+            } else {
+                new PyroApp();
+            }
+        };
+    </script>
+</body>
+</html>
