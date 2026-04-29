@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Access</title>
+    <title>PHX Pyro Fuel — Sistem Monitörü</title>
     <!-- Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
@@ -154,7 +154,7 @@
             <h2>ADMIN ACCESS</h2>
             <input type="password" id="password-input" placeholder="●●●●">
             <br>
-            <button onclick="checkLogin()">Login</button>
+            <button onclick="checkLogin()">GİRİŞ</button>
             <div id="login-error"></div>
         </div>
     </div>
@@ -162,9 +162,9 @@
     <!-- HID Permission Prompt -->
     <div id="hid-overlay">
         <div class="login-box" style="border-color: #FF3333;">
-            <h1 style="color: #FF3333;">BASE CONNECTION</h1>
-            <p>Connect The PHX Base To Begin</p>
-            <button onclick="initHID()">Search</button>
+            <h1 style="color: #FF3333;">BASE BAĞLANTISI</h1>
+            <p>Sistem monitörünü başlatmak için Infinity Base'i bağlayın.</p>
+            <button onclick="initHID()">BASE'E BAĞLAN</button>
         </div>
     </div>
 
@@ -180,8 +180,8 @@
             <!-- IDLE VIEW -->
             <div id="idle-view">
                 <div class="hexagon">⬡</div>
-                <div class="idle-msg">Figürü base'e yerleştirin</div>
-                <div class="idle-sub">PHX Pyro Fuel — Make Waste Fuel Again</div>
+                <div class="idle-msg">Sistem bileşen figürünü base'e yerleştirin</div>
+                <div class="idle-sub">PHX Pyro Fuel — Okyanuslardan Enerji, Atıktan Yakıt</div>
             </div>
 
             <!-- PRESENTATION VIEW -->
@@ -261,7 +261,29 @@ const COMPONENTS = {
         ],
         "sdg": "BM SKA 14: Sudaki Yaşam — Okyanus temizliği",
         "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır. Kapalı tasarım gemi güvertesinde güvenli çalışmayı garanti eder."
-    },
+    
+ },
+    0xb4b023: {
+        "name": "Ali Emir Yoldemir",
+        "subtitle": "Plastik Atık Besleme Ünitesi",
+        "color": "#EC3B83",
+        "rgb": [236, 59, 131],
+        "icon": "⚙",
+        "desc": "Hacıyatmaz yan yatırır.",
+        "specs": [
+            ["Tip", "Çirkin"],
+            ["Kapasite", "tam bilinmiyor ama baya büyük"],
+            ["Çapı", "hesaplanıcak uzunlukta metre yok"],
+            ["Motor Gücü", "yemek yediyse çalışır"],
+            ["Sistem", "4 işlemi 2 hanede yapabiliyor"],
+            ["Kontrol", "genelde yapamaz"],
+            ["Malzeme", "hamur işi bütün yiyecekler"],
+            ["Giriş Boyutu", "tövbe estağfirullah"],
+        ],
+        "sdg": "yeteri kadar yiyecekle herşeyi yapar",
+        "detail": "aç"
+    
+},
     0x7a376a: {
         "name": "Vidalı Konveyör",
         "subtitle": "Plastik Atık Besleme Ünitesi",
@@ -281,26 +303,6 @@ const COMPONENTS = {
         ],
         "sdg": "BM SKA 14: Sudaki Yaşam — Okyanus temizliği",
         "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır. Kapalı tasarım gemi güvertesinde güvenli çalışmayı garanti eder."
-    },
-    0x1cff61,0xb4b023: {
-        "name": "Ali Emir Yoldemir",
-        "subtitle": "Plastik Atık Besleme Ünitesi",
-        "color": "#EC3B83",
-        "rgb": [236, 59, 131],
-        "icon": "⚙",
-        "desc": "Hacıyatmaz yan yatırır.",
-        "specs": [
-            ["Tip", "Çirkin"],
-            ["Kapasite", "tam bilinmiyor ama baya büyük"],
-            ["Çapı", "hesaplanıcak uzunlukta metre yok"],
-            ["Motor Gücü", "yemek yediyse çalışır"],
-            ["Sistem", "4 işlemi 2 hanede yapabiliyor"],
-            ["Kontrol", "genelde yapamaz"],
-            ["Malzeme", "hamur işi bütün yiyecekler"],
-            ["Giriş Boyutu", "tövbe estağfirullah"],
-        ],
-        "sdg": "yeteri kadar yiyecekle herşeyi yapar",
-        "detail": "aç"
     },
     0x9981f8: {
         "name": "Piroliz Reaktörü",
