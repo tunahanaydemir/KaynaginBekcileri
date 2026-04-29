@@ -1,491 +1,639 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin System</title>
-    <script src="https://cdn.jsdelivr.net/npm/aes-js@3.1.2/index.min.js"></script>
+    <title>Admin Access</title>
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0a0a0f;
-            color: #ccccdd;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        :root {
+            --bg-color: #0d0010;
+            --panel-bg: #140020;
+            --input-bg: #1e002e;
+            --primary-purple: #6B00CC;
+            --accent-purple: #CC44FF;
+            --text-main: #bbaadd;
+            --text-dim: #6633AA;
+            --text-dark: #3d1a5e;
+            --error-red: #FF3333;
         }
 
-        /* --- ADMIN LOCK SCREEN --- */
-        #admin-lock {
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        /* --- Login Screen --- */
+        #login-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0a0a0f;
+            background-color: var(--bg-color);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            z-index: 1000;
         }
 
-        #lock-box {
-            text-align: center;
-            border: 1px solid #333344;
+        .login-box {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--primary-purple);
+            width: 420px;
             padding: 40px;
-            background: #0d0d14;
+            text-align: center;
         }
 
-        #admin-lock input {
-            background: #1a1a2e;
-            border: 1px solid #FF6B00;
-            color: #FF6B00;
-            padding: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
+        .login-box h1 { color: var(--accent-purple); margin: 0; font-size: 22px; }
+        .login-box p { color: var(--text-dim); font-size: 11px; margin: 4px 0 20px 0; }
+        .divider { height: 1px; background: var(--primary-purple); margin: 20px 0; }
+        .login-box h2 { color: #AA66FF; font-size: 13px; margin-bottom: 14px; }
+
+        input[type="password"] {
+            width: 80%;
+            background: var(--input-bg);
+            border: 1px solid var(--primary-purple);
+            color: var(--accent-purple);
+            padding: 10px;
+            font-size: 16px;
             text-align: center;
             outline: none;
-            margin-bottom: 20px;
-            width: 200px;
+            margin-bottom: 14px;
         }
 
-        #admin-lock button {
-            background: #FF6B00;
-            color: #0a0a0f;
+        button {
+            background: var(--primary-purple);
+            color: white;
             border: none;
-            padding: 10px 25px;
+            padding: 10px 30px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            transition: 0.3s;
+            font-family: inherit;
         }
 
-        #admin-lock button:hover {
-            background: #e65a00;
+        button:hover { background: #8800FF; }
+
+        #login-error { color: var(--error-red); font-size: 10px; margin-top: 10px; height: 15px; }
+
+        /* --- Main App UI --- */
+        #main-app {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            padding: 28px 50px;
+            box-sizing: border-box;
         }
 
-        /* --- MAIN UI --- */
-        #header {
-            text-align: center;
-            padding-top: 40px;
-        }
+        .header { text-align: center; margin-bottom: 14px; }
+        .header h1 { color: var(--accent-purple); font-size: 32px; margin: 0; }
+        .header p { color: var(--text-dim); font-size: 11px; margin: 3px 0 0 0; }
+        .h-line { height: 1px; background: var(--primary-purple); width: 100%; margin: 14px 0; }
 
-        #title {
-            color: #FF6B00;
-            font-size: 44px;
-            font-weight: bold;
-            margin: 0;
-        }
+        .content-area { flex: 1; position: relative; }
 
-        #subtitle {
-            color: #555566;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .divider {
-            height: 1px;
-            background-color: #FF6B00;
-            margin: 20px 60px;
-        }
-
-        #content-area {
-            flex-grow: 1;
-            position: relative;
-            padding: 0 60px;
-        }
-
-        #idle-frame {
+        /* --- Idle View --- */
+        #idle-view {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
         }
+        .hexagon { font-size: 100px; color: #1a0028; }
+        .idle-msg { font-size: 17px; color: var(--text-dark); margin: 20px 0 8px 0; }
+        .idle-sub { font-size: 10px; color: #2a0040; }
 
-        #hex-icon {
-            font-size: 120px;
-            color: #1a1a2e;
-        }
+        /* --- Presentation View --- */
+        #pres-view { display: none; height: 100%; flex-direction: column; }
+        #p-icon { font-size: 72px; text-align: center; margin-top: 14px; }
+        #p-name { font-size: 44px; font-weight: bold; text-align: center; margin: 0; }
+        #p-subtitle { font-size: 13px; color: #9966CC; text-align: center; margin: 2px 0 12px 0; }
+        #p-desc { font-size: 12px; color: #bbaadd; text-align: center; max-width: 900px; margin: 0 auto; line-height: 1.4; }
+        #p-line { height: 1px; background: #333344; margin: 16px 0; }
 
-        #idle-text {
-            font-size: 24px;
-            color: #333344;
-            margin-top: -20px;
-        }
+        .cols { display: flex; width: 100%; }
+        .col-left { flex: 1; padding: 0 10px 0 20px; }
+        .col-right { flex: 1; padding: 0 20px 0 10px; }
+        .v-sep { width: 1px; background: #330055; margin: 10px 0; }
 
-        #pres-frame {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            height: 100%;
-            text-align: center;
-        }
+        .spec-title { font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+        .spec-row { display: flex; margin-bottom: 4px; font-size: 11px; }
+        .spec-key { width: 180px; color: inherit; }
+        .spec-val { color: #ddccee; }
 
-        #pres-icon {
-            font-size: 100px;
-            margin-top: 20px;
-        }
+        #p-detail { font-size: 11px; color: #bbaadd; line-height: 1.5; text-align: left; }
+        #p-sdg { font-size: 10px; font-style: italic; color: var(--text-dim); text-align: center; margin-top: auto; padding-top: 10px;}
+        .footer-tag { font-size: 9px; color: #2a0040; text-align: center; margin: 6px 0; }
 
-        #pres-name {
-            font-size: 60px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
+        #status-bar { position: fixed; bottom: 6px; width: 100%; text-align: center; color: var(--text-dark); font-size: 9px; pointer-events: none; }
 
-        #pres-desc {
-            font-size: 22px;
-            color: #aaaacc;
-            max-width: 800px;
-            line-height: 1.4;
-        }
-
-        .pres-line {
-            height: 1px;
-            width: 100%;
-            margin: 30px 0;
-        }
-
-        #pres-specs {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .spec-row {
-            display: flex;
-            align-items: center;
-            font-size: 20px;
-            margin: 5px 0;
-        }
-
-        .spec-bullet {
-            margin-right: 10px;
-        }
-
-        #status-bar {
-            text-align: center;
-            padding: 10px;
-            font-size: 14px;
-            color: #444455;
-        }
-
-        #connect-btn {
-            background: #1a1a2e;
-            color: #FF6B00;
-            border: 1px solid #FF6B00;
-            padding: 10px 20px;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        #footer {
-            text-align: center;
-            padding-bottom: 20px;
-            font-size: 14px;
-            color: #333344;
+        /* HID Permission Overlay */
+        #hid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13,0,16,0.95); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
         }
     </style>
 </head>
 <body>
 
-    <div id="admin-lock">
-        <div id="lock-box">
-            <p style="color: #FF6B00; font-size: 24px; margin-bottom: 20px;">Admin Access</p>
-            <input type="password" id="pass-input" placeholder="ACCESS KEY">
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>PHX PYRO FUEL</h1>
+            <p>Make Waste Fuel Again</p>
+            <div class="divider"></div>
+            <h2>ADMIN ACCESS</h2>
+            <input type="password" id="password-input" placeholder="●●●●">
             <br>
-            <button onclick="checkPass()">LOGIN</button>
-            <p id="error-msg" style="color: #ff4444; margin-top: 15px; font-size: 14px; display: none;">ACCESS DENIED: INVALID KEY</p>
+            <button onclick="checkLogin()">Login</button>
+            <div id="login-error"></div>
         </div>
     </div>
 
-    <div id="header">
-        <p id="title">PHX PYRO FUEL</p>
-        <p id="subtitle">Make Waste Fuel Again!</p>
+    <!-- HID Permission Prompt -->
+    <div id="hid-overlay">
+        <div class="login-box" style="border-color: #FF3333;">
+            <h1 style="color: #FF3333;">BASE CONNECTION</h1>
+            <p>Connect The PHX Base To Begin</p>
+            <button onclick="initHID()">Search</button>
+        </div>
     </div>
 
-    <div class="divider"></div>
-
-    <div id="content-area">
-        <div id="idle-frame">
-            <div id="hex-icon">⬡</div>
-            <div id="idle-text">Figürü base'e yerleştirin</div>
-            <button id="connect-btn">Base'e Bağlan</button>
+    <!-- Main Application -->
+    <div id="main-app">
+        <div class="header">
+            <h1>PHX PYRO FUEL</h1>
+            <p>MAKE WASTE FUEL AGAIN  ·  Sistem Bileşen Monitörü</p>
         </div>
+        <div class="h-line"></div>
 
-        <div id="pres-frame">
-            <div id="pres-icon"></div>
-            <div id="pres-name"></div>
-            <div id="pres-desc"></div>
-            <div id="pres-line" class="pres-line"></div>
-            <div id="pres-specs"></div>
-            <div style="flex-grow: 1;"></div>
-            <div id="footer">PHX Pyro Fuel — GençBizz 2025</div>
+        <div class="content-area">
+            <!-- IDLE VIEW -->
+            <div id="idle-view">
+                <div class="hexagon">⬡</div>
+                <div class="idle-msg">Figürü base'e yerleştirin</div>
+                <div class="idle-sub">PHX Pyro Fuel — Make Waste Fuel Again</div>
+            </div>
+
+            <!-- PRESENTATION VIEW -->
+            <div id="pres-view">
+                <div id="p-icon"></div>
+                <div id="p-name"></div>
+                <div id="p-subtitle"></div>
+                <div id="p-desc"></div>
+                <div id="p-line"></div>
+                
+                <div class="cols">
+                    <div class="col-left" id="p-specs"></div>
+                    <div class="v-sep"></div>
+                    <div class="col-right">
+                        <div class="spec-title" id="detail-header">DETAY</div>
+                        <div id="p-detail"></div>
+                    </div>
+                </div>
+
+                <div id="p-sdg"></div>
+                <div class="footer-tag">PHX Pyro Fuel — GençBizz 2025-2026 · phxpyrofuels@gmail.com</div>
+            </div>
         </div>
     </div>
 
     <div id="status-bar">Bağlantı bekleniyor...</div>
 
-    <script>
-        // --- ADMIN LOGIN LOGIC ---
-        function checkPass() {
-            const pass = document.getElementById('pass-input').value;
-            const lockScreen = document.getElementById('admin-lock');
-            const errorMsg = document.getElementById('error-msg');
+<script>
+/**
+ * CONSTANTS & DATA
+ */
+const SHA1_CONSTANT = [
+    0xAF, 0x62, 0xD2, 0xEC, 0x04, 0x91, 0x96, 0x8C, 0xC5, 0x2A, 0x1A, 0x71, 0x65, 0xF8, 0x65, 0xFE,
+    0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33
+];
 
-            if (pass === "xlyn") {
-                lockScreen.style.transition = "0.5s";
-                lockScreen.style.opacity = "0";
-                setTimeout(() => {
-                    lockScreen.style.display = "none";
-                }, 500);
-            } else {
-                errorMsg.style.display = "block";
-                document.getElementById('pass-input').value = "";
+const ADMIN_PASSWORD = "xlyn";
+const RED_RGB = [204, 0, 0];
+
+const COMPONENTS = {
+    0xc52257: {
+        "name": "Kondenser",
+        "subtitle": "Gaz Soğutma ve Sıvılaştırma Ünitesi",
+        "color": "#00BFFF",
+        "rgb": [0, 191, 255],
+        "icon": "❄",
+        "desc": "Piroliz reaktöründen çıkan yüksek sıcaklıktaki gaz karışımı kondenser ünitesinde soğutularak sıvı yakıta dönüştürülür. Kabuk-boru eşanjör tasarımı ve deniz suyu soğutma devresi ile %85-92 verim sağlanır.",
+        "specs": [
+            ["Tip", "Kabuk-boru eşanjör"],
+            ["Soğutma Ortamı", "Deniz suyu devresi"],
+            ["Soğutma Kapasitesi", "50 kW"],
+            ["Giriş Sıcaklığı", "~450°C"],
+            ["Çıkış Sıcaklığı", "≤40°C"],
+            ["Verim", "%85–92"],
+            ["Malzeme", "316L Paslanmaz çelik"],
+            ["Ek Enerji", "Gerektirmez"],
+        ],
+        "sdg": "BM SKA 12: Sorumlu Üretim ve Tüketim",
+        "detail": "Kondenser ünitesi, sistemin toplam verimliliğini doğrudan etkiler. Deniz suyunu soğutma ortamı olarak kullanması sayesinde ek enerji tüketimi sıfırdır. Çıkan sıvı, IMO 2020 uyumlu düşük kükürtlü yakıt (≤%0,5 S) kalitesindedir."
+    },
+    0x4cd171: {
+        "name": "Vidalı Konveyör",
+        "subtitle": "Plastik Atık Besleme Ünitesi",
+        "color": "#FFD700",
+        "rgb": [255, 215, 0],
+        "icon": "⚙",
+        "desc": "Okyanuslardan toplanan plastik atıklar vidalı konveyör sistemi ile kontrollü şekilde piroliz reaktörüne iletilir. Kapalı sistem tasarımı koku ve gaz kaçağını önler, saatte 400 kg'a kadar plastik işlenebilir.",
+        "specs": [
+            ["Tip", "Yatay vidalı konveyör"],
+            ["Kapasite", "400 kg/gün"],
+            ["Vida Çapı", "80 mm"],
+            ["Motor Gücü", "1,5 kW"],
+            ["Sistem", "Kapalı, sızdırmaz"],
+            ["Kontrol", "PLC otomatik besleme"],
+            ["Malzeme", "S235 Yapısal çelik"],
+            ["Giriş Boyutu", "Max. 50 mm parça"],
+        ],
+        "sdg": "BM SKA 14: Sudaki Yaşam — Okyanus temizliği",
+        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır. Kapalı tasarım gemi güvertesinde güvenli çalışmayı garanti eder."
+    },
+    0x7a376a: {
+        "name": "Vidalı Konveyör",
+        "subtitle": "Plastik Atık Besleme Ünitesi",
+        "color": "#FFD700",
+        "rgb": [255, 215, 0],
+        "icon": "⚙",
+        "desc": "Okyanuslardan toplanan plastik atıklar vidalı konveyör sistemi ile kontrollü şekilde piroliz reaktörüne iletilir. Kapalı sistem tasarımı koku ve gaz kaçağını önler, saatte 400 kg'a kadar plastik işlenebilir.",
+        "specs": [
+            ["Tip", "Yatay vidalı konveyör"],
+            ["Kapasite", "400 kg/gün"],
+            ["Vida Çapı", "80 mm"],
+            ["Motor Gücü", "1,5 kW"],
+            ["Sistem", "Kapalı, sızdırmaz"],
+            ["Kontrol", "PLC otomatik besleme"],
+            ["Malzeme", "S235 Yapısal çelik"],
+            ["Giriş Boyutu", "Max. 50 mm parça"],
+        ],
+        "sdg": "BM SKA 14: Sudaki Yaşam — Okyanus temizliği",
+        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır. Kapalı tasarım gemi güvertesinde güvenli çalışmayı garanti eder."
+    },
+    0x9981f8: {
+        "name": "Piroliz Reaktörü",
+        "subtitle": "Isıl Ayrışma Reaktörü — Sistemin Kalbi",
+        "color": "#CC0000",
+        "rgb": [204, 0, 0],
+        "icon": "🔥",
+        "desc": "Plastik atıklar oksijensiz ortamda 350–500°C'de ısıtılarak zincir kırılma (ısıl ayrışma) yöntemiyle gaz ve sıvı yakıt bileşenlerine dönüştürülür. ZSM-5 zeolit katalizör sistemi verim ve ürün kalitesini artırır.",
+        "specs": [
+            ["Boyut", "Ø1,2 m × H1,8 m"],
+            ["Çalışma Sıcaklığı", "350–500°C"],
+            ["Basınç", "Atmosferik"],
+            ["Kapasite", "400 kg plastik/gün"],
+            ["Katalizör", "ZSM-5 zeolit"],
+            ["Malzeme", "316L Paslanmaz çelik"],
+            ["Isıtma", "Elektrik + NCG gazı"],
+            ["Güvenlik", "Emniyet ventili, patlama diski"],
+        ],
+        "sdg": "BM SKA 13: İklim Eylemi — CO₂ azaltımı",
+        "detail": "Piroliz reaktörü sistemin merkezindedir. 1 kg plastikten yaklaşık 650 ml sıvı yakıt, 170 g NCG gazı ve 120 g char (karbon tozu) elde edilir. ZSM-5 katalizör sistemi ürün kalitesini iyileştirerek IMO 2020 uyumlu LSFO üretimini garanti eder."
+    },
+    0xebe124: {
+        "name": "NCG Geri Besleme",
+        "subtitle": "Non-Condensable Gas Geri Kazanım Sistemi",
+        "color": "#00CC00",
+        "rgb": [0, 204, 0],
+        "icon": "♻",
+        "desc": "Kondenserde yoğunlaşmayan gazlar (NCG) reaktörün ısıtma sistemine geri beslenerek yakıt olarak kullanılır. Bu döngü sistemin enerji bağımsızlığını artırır ve sıfır atık döngüsel üretimi mümkün kılar.",
+        "specs": [
+            ["Gaz Debisi", "~170 g/kg plastik"],
+            ["Boru Çapı", "25 mm"],
+            ["Vana Tipi", "Solenoid otomatik"],
+            ["Kontrol", "PLC entegreli"],
+            ["Basınç", "Düşük basınç hattı"],
+            ["Enerji Tasarrufu", "~%30 ısıtma maliyeti"],
+            ["Güvenlik", "Gaz dedektörü entegreli"],
+            ["İşlev", "Reaktör ısıtma yakıtı"],
+        ],
+        "sdg": "BM SKA 7: Erişilebilir ve Temiz Enerji",
+        "detail": "NCG geri besleme sistemi, piroliz prosesinin en kritik verimlilik unsurlarından biridir. Normalde yakılarak uzaklaştırılan bu gazlar sisteme geri kazandırılarak reaktörün ısıtma enerjisinin yaklaşık %30'u karşılanır. Bu sayede dış enerji ihtiyacı minimum seviyede tutulur."
+    },
+    0x1ac5a4: {
+        "name": "Depolama Tankı",
+        "subtitle": "IMO 2020 Uyumlu Yakıt Depolama Ünitesi",
+        "color": "#8B00FF",
+        "rgb": [139, 0, 255],
+        "icon": "🛢",
+        "desc": "Kondenser çıkışındaki sıvı piroliz yakıtı depolama tankında biriktirilir. IMO 2020 regülasyonlarına uygun ≤%0,5 kükürt içeriği ile geminin kendi motoruna veya 3. taraflara satışa hazır hale gelir.",
+        "specs": [
+            ["Hacim", "500 litre"],
+            ["Malzeme", "HDPE / Paslanmaz"],
+            ["Kükürt İçeriği", "≤%0,5 (IMO 2020)"],
+            ["Basınç", "Atmosferik"],
+            ["Çıkış Vanası", "El kumandası"],
+            ["Ürün Kalitesi", "LSFO — Low Sulfur Fuel Oil"],
+            ["Kullanım", "Gemi motoru veya satış"],
+            ["Kayıt", "Dijital debi ölçümü"],
+        ],
+        "sdg": "BM SKA 12: Sorumlu Üretim — Sıfır atık döngüsü",
+        "detail": "Depolama tankı, sistemin nihai ürününü barındırır. Üretilen LSFO, denizcilik sektöründe talep gören ve IMO 2020 sonrası artan fiyatlarıyla yüksek değerli bir emtiadır. Geminin kendi ihtiyacını karşıladıktan sonra kalan yakıt limanlarda veya 3. taraflara satılabilir."
+    },
+};
+
+/**
+ * COMMUNICATION CLASS
+ */
+class InfinityComms {
+    constructor(device) {
+        this.device = device;
+        this.messageNumber = 0;
+        this.pendingRequests = new Map();
+        
+        this.device.oninputreport = (event) => {
+            const data = new Uint8Array(event.data.buffer);
+            const msgId = data[2];
+            if (this.pendingRequests.has(msgId)) {
+                this.pendingRequests.get(msgId)(data);
+                this.pendingRequests.delete(msgId);
             }
+            // Also notify global listener for tag events
+            if (data[0] === 0xab && window.app) {
+                window.app.handleBaseEvent(data);
+            }
+        };
+    }
+
+    nextId() {
+        this.messageNumber = (this.messageNumber + 1) % 256;
+        return this.messageNumber;
+    }
+
+    async sendRecv(command, data = [], timeout = 1000) {
+        const msgId = this.nextId();
+        const body = [command, msgId, ...data];
+        // packet = [0xff, length, ...body, checksum, ...padding]
+        const packet = new Uint8Array(32); // sendReport prepends report ID 0x00
+        packet[0] = 0xff;
+        packet[1] = body.length;
+        for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
+        
+        // checksum = sum of [0xff, length, ...body] & 0xff
+        let checksum = 0;
+        for (let i = 0; i < body.length + 2; i++) checksum = (checksum + packet[i]) & 0xff;
+        packet[body.length + 2] = checksum;
+
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingRequests.delete(msgId);
+                resolve(null);
+            }, timeout);
+
+            this.pendingRequests.set(msgId, (response) => {
+                clearTimeout(timer);
+                resolve(Array.from(response));
+            });
+
+            this.device.sendReport(0x00, packet);
+        });
+    }
+
+    sendOnly(command, data = []) {
+        const msgId = this.nextId();
+        const body = [command, msgId, ...data];
+        const packet = new Uint8Array(32);
+        packet[0] = 0xff;
+        packet[1] = body.length;
+        for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
+        
+        let checksum = 0;
+        for (let i = 0; i < body.length + 2; i++) checksum = (checksum + packet[i]) & 0xff;
+        packet[body.length + 2] = checksum;
+
+        this.device.sendReport(0x00, packet);
+    }
+}
+
+/**
+ * CRYPTO HELPERS
+ */
+function deriveKey(uid) {
+    const sha1Calc = new Uint8Array(38);
+    sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
+    sha1Calc.set(uid.slice(0, 7), 31);
+    
+    const words = CryptoJS.lib.WordArray.create(sha1Calc);
+    const sha1OutWords = CryptoJS.SHA1(words);
+    const sha1Out = wordToByteArray(sha1OutWords);
+    
+    const key = new Uint8Array(16);
+    for (let i = 0; i < 4; i++) {
+        for (let x = 0; x < 4; x++) {
+            key[x + (i * 4)] = sha1Out[(3 - x) + (i * 4)];
         }
+    }
+    return key;
+}
 
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                checkPass();
+function wordToByteArray(wordArray) {
+    const bytes = [];
+    for (let i = 0; i < wordArray.sigBytes; i++) {
+        bytes.push((wordArray.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
+    }
+    return bytes;
+}
+
+async function readFigureId(comms, order) {
+    try {
+        const resp = await comms.sendRecv(0xB4, [order]);
+        if (!resp) return null;
+        const uid = resp.slice(4, 11);
+        const key = deriveKey(uid);
+        
+        const resp2 = await comms.sendRecv(0xA2, [order, 0x00, 0x01]);
+        if (!resp2) return null;
+        const blockData = resp2.slice(4, 20);
+
+        const keyWA = CryptoJS.lib.WordArray.create(key);
+        const cipherTextWA = CryptoJS.lib.WordArray.create(new Uint8Array(blockData));
+        
+        const decrypted = CryptoJS.AES.decrypt(
+            { ciphertext: cipherTextWA },
+            keyWA,
+            { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding }
+        );
+        
+        const dec = wordToByteArray(decrypted);
+        const figId = (dec[1] << 16) | (dec[2] << 8) | dec[3];
+        return figId;
+    } catch (e) {
+        console.error("NFC Read Error", e);
+        return null;
+    }
+}
+
+/**
+ * LIGHT CONTROLLER
+ */
+class LightController {
+    constructor(comms) {
+        this.comms = comms;
+        this.currentRgb = RED_RGB;
+        this.interval = null;
+        this.start();
+    }
+
+    setColor(rgb) {
+        this.currentRgb = rgb;
+    }
+
+    start() {
+        this.interval = setInterval(() => {
+            const [r, g, b] = this.currentRgb;
+            try {
+                this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
+                this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
+            } catch (e) {}
+        }, 2500);
+    }
+
+    stop() {
+        if (this.interval) clearInterval(this.interval);
+    }
+}
+
+/**
+ * MAIN APP CLASS
+ */
+class PyroApp {
+    constructor(device) {
+        this.comms = new InfinityComms(device);
+        this.lightCtrl = null;
+        this.initBase();
+    }
+
+    async initBase() {
+        try {
+            await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
+            this.lightCtrl = new LightController(this.comms);
+            this.setStatus("Base bağlı ✓ — Figür bekleniyor...");
+        } catch (e) {
+            this.setStatus("Bağlantı hatası!");
+        }
+    }
+
+    async handleBaseEvent(fields) {
+        const position = fields[2];
+        const order = fields[4];
+        const action = fields[5];
+
+        if (position !== 3) return;
+
+        if (action === 0x00) {
+            this.setStatus("NFC taranıyor...");
+            const figId = await readFigureId(this.comms, order);
+            this.setStatus(`NFC okundu: ${figId ? '0x' + figId.toString(16) : 'bilinmiyor'}`);
+            
+            if (figId && COMPONENTS[figId]) {
+                if (this.lightCtrl) this.lightCtrl.setColor(COMPONENTS[figId].rgb);
+                this.showComponent(figId);
             }
+        } else {
+            if (this.lightCtrl) this.lightCtrl.setColor(RED_RGB);
+            this.showIdle();
+            this.setStatus("Base bağlı ✓ — Figür bekleniyor...");
+        }
+    }
+
+    showIdle() {
+        document.getElementById('pres-view').style.display = 'none';
+        document.getElementById('idle-view').style.display = 'flex';
+    }
+
+    showComponent(figId) {
+        const comp = COMPONENTS[figId];
+        const color = comp.color;
+
+        document.getElementById('p-icon').innerText = comp.icon;
+        document.getElementById('p-icon').style.color = color;
+        
+        document.getElementById('p-name').innerText = comp.name;
+        document.getElementById('p-name').style.color = color;
+        
+        document.getElementById('p-subtitle').innerText = comp.subtitle;
+        document.getElementById('p-subtitle').style.color = color;
+        
+        document.getElementById('p-desc').innerText = comp.desc;
+        
+        const pLine = document.getElementById('p-line');
+        pLine.style.backgroundColor = color;
+
+        document.getElementById('p-sdg').innerText = "🌍 " + comp.sdg;
+
+        // Specs
+        const specsContainer = document.getElementById('p-specs');
+        specsContainer.innerHTML = `<div class="spec-title" style="color:${color}">TEKNİK ÖZELLİKLER</div>`;
+        
+        comp.specs.forEach(([key, val]) => {
+            const row = document.createElement('div');
+            row.className = 'spec-row';
+            row.innerHTML = `<div class="spec-key" style="color:${color}">▸ ${key}:</div><div class="spec-val">${val}</div>`;
+            specsContainer.appendChild(row);
         });
 
-        // --- ORIGINAL SYSTEM LOGIC ---
-        const SHA1_CONSTANT = new Uint8Array([
-            0xAF, 0x62, 0xD2, 0xEC, 0x04, 0x91, 0x96, 0x8C, 0xC5, 0x2A, 0x1A, 0x71, 0x65, 0xF8, 0x65, 0xFE,
-            0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33
-        ]);
+        // Detail
+        document.getElementById('detail-header').style.color = color;
+        document.getElementById('p-detail').innerText = comp.detail;
 
-        const COMPONENTS = {
-            0xc52257: {
-                "name": "Kondenser",
-                "color": "#00BFFF",
-                "rgb": [0, 191, 255],
-                "icon": "❄️",
-                "desc": "Piroliz gazlarını soğutarak sıvı yakıta dönüştürür.",
-                "specs": ["Soğutma kapasitesi: 50 kW", "Çıkış sıcaklığı: 40°C", "Verim: %92", "Malzeme: Paslanmaz çelik"]
-            },
-            0x4cd171: {
-                "name": "Vidalı Konveyör",
-                "color": "#FFD700",
-                "rgb": [255, 215, 0],
-                "icon": "⚙️",
-                "desc": "Plastik atıkları reaktöre besleyen vida mekanizması.",
-                "specs": ["Kapasite: 10 kg/saat", "Vida çapı: 80 mm", "Motor gücü: 1.5 kW", "Malzeme: S235 Çelik"]
-            },
-            0x9981f8: {
-                "name": "Piroliz Reaktörü",
-                "color": "#CC0000",
-                "rgb": [204, 0, 0],
-                "icon": "🔥",
-                "desc": "Plastiği oksijensiz ortamda ısıtarak gaz ve yağa dönüştürür.",
-                "specs": ["Çalışma sıcaklığı: 400-500°C", "Kapasite: 5 kg/saat", "Basınç: Atmosferik", "Malzeme: Refrakter çelik"]
-            },
-            0xebe124: {
-                "name": "NCG Geri Besleme",
-                "color": "#00CC00",
-                "rgb": [0, 204, 0],
-                "icon": "♻️",
-                "desc": "Yoğunlaşmayan gazları reaktöre geri göndererek enerji tasarrufu sağlar.",
-                "specs": ["Gaz debisi: 2 m³/saat", "Boru çapı: 25 mm", "Vana tipi: Solenoid", "Kontrol: Otomatik"]
-            },
-            0x1ac5a4: {
-                "name": "Depolama Tankı",
-                "color": "#8B00FF",
-                "rgb": [139, 0, 255],
-                "icon": "🛢️",
-                "desc": "Üretilen düşük kükürtlü yakıt yağını depolar.",
-                "specs": ["Hacim: 200 litre", "Malzeme: HDPE", "Çalışma basıncı: Atmosferik", "Çıkış vanası: El kumandası"]
-            }
-        };
+        document.getElementById('idle-view').style.display = 'none';
+        document.getElementById('pres-view').style.display = 'flex';
+    }
 
-        const RED = [204, 0, 0];
+    setStatus(msg) {
+        document.getElementById('status-bar').innerText = msg;
+    }
+}
 
-        class InfinityComms {
-            constructor(device) {
-                this.device = device;
-                this.messageNumber = 0;
-                this.isLocked = false;
-                this.pendingResponse = null;
-                this.device.oninputreport = (event) => {
-                    this.pendingResponse = new Uint8Array(event.data.buffer);
-                };
-            }
-            nextId() { this.messageNumber = (this.messageNumber + 1) % 256; return this.messageNumber; }
-            async acquireLock() { while (this.isLocked) await new Promise(r => setTimeout(r, 10)); this.isLocked = true; }
-            releaseLock() { this.isLocked = false; }
-            async sendRecv(command, data = []) {
-                await this.acquireLock();
-                try {
-                    const msgId = this.nextId();
-                    const body = [command, msgId, ...data];
-                    const packet = new Uint8Array(33);
-                    packet[1] = 0xff;
-                    packet[2] = body.length;
-                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
-                    let checksum = 0;
-                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
-                    packet[3 + body.length] = checksum & 0xff;
-                    this.pendingResponse = null;
-                    await this.device.sendReport(0x00, packet.slice(1));
-                    for (let i = 0; i < 30; i++) {
-                        if (this.pendingResponse) {
-                            const resp = this.pendingResponse;
-                            if (resp[0] === 0xaa && resp[2] === msgId) return Array.from(resp);
-                        }
-                        await new Promise(r => setTimeout(r, 100));
-                    }
-                    return null;
-                } finally { this.releaseLock(); }
-            }
-            async sendOnly(command, data = []) {
-                await this.acquireLock();
-                try {
-                    const msgId = this.nextId();
-                    const body = [command, msgId, ...data];
-                    const packet = new Uint8Array(33);
-                    packet[1] = 0xff;
-                    packet[2] = body.length;
-                    for (let i = 0; i < body.length; i++) packet[3 + i] = body[i];
-                    let checksum = 0;
-                    for (let i = 1; i < 3 + body.length; i++) checksum += packet[i];
-                    packet[3 + body.length] = checksum & 0xff;
-                    await this.device.sendReport(0x00, packet.slice(1));
-                } finally { this.releaseLock(); }
-            }
+/**
+ * UI CONTROLS
+ */
+function checkLogin() {
+    const input = document.getElementById('password-input').value;
+    const error = document.getElementById('login-error');
+    if (input === ADMIN_PASSWORD) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('hid-overlay').style.display = 'flex';
+    } else {
+        error.innerText = "⚠ YANLIŞ ŞİFRE";
+        document.getElementById('password-input').value = "";
+    }
+}
+
+async function initHID() {
+    try {
+        const devices = await navigator.hid.requestDevice({
+            filters: [{ vendorId: 0x0e6f, productId: 0x0129 }]
+        });
+
+        if (devices.length > 0) {
+            const device = devices[0];
+            await device.open();
+            document.getElementById('hid-overlay').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            window.app = new PyroApp(device);
         }
+    } catch (e) {
+        alert("Bağlantı hatası: " + e.message);
+    }
+}
 
-        async function deriveKey(uid) {
-            const sha1Calc = new Uint8Array(38);
-            sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
-            sha1Calc.set(uid.slice(0, 7), 31);
-            const hashBuffer = await crypto.subtle.digest('SHA-1', sha1Calc);
-            const sha1Out = new Uint8Array(hashBuffer);
-            const key = new Uint8Array(16);
-            for (let i = 0; i < 4; i++) {
-                for (let x = 0; x < 4; x++) key[x + (i * 4)] = sha1Out[(3 - x) + (i * 4)];
-            }
-            return key;
-        }
-
-        async function readFigureId(comms, order) {
-            try {
-                const resp = await comms.sendRecv(0xB4, [order]);
-                if (!resp) return null;
-                const uid = resp.slice(4, 11);
-                const key = await deriveKey(uid);
-                const resp2 = await comms.sendRecv(0xA2, [order, 0x00, 0x01]);
-                if (!resp2) return null;
-                const blockData = resp2.slice(4, 20);
-                const aesEcb = new aesjs.ModeOfOperation.ecb(key);
-                const dec = aesEcb.decrypt(new Uint8Array(blockData));
-                return (dec[1] << 16) | (dec[2] << 8) | dec[3];
-            } catch (e) { return null; }
-        }
-
-        class LightController {
-            constructor(comms) { this.comms = comms; this.currentRgb = RED; this.interval = null; }
-            setColor(rgb) { this.currentRgb = rgb; }
-            start() {
-                this.interval = setInterval(async () => {
-                    const [r, g, b] = this.currentRgb;
-                    try {
-                        await this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
-                        await this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
-                    } catch (e) {}
-                }, 2500);
-            }
-        }
-
-        class PyroApp {
-            constructor() {
-                this.comms = null; this.light = null; this.running = true;
-                this.ui = {
-                    idleFrame: document.getElementById('idle-frame'),
-                    presFrame: document.getElementById('pres-frame'),
-                    presIcon: document.getElementById('pres-icon'),
-                    presName: document.getElementById('pres-name'),
-                    presDesc: document.getElementById('pres-desc'),
-                    presLine: document.getElementById('pres-line'),
-                    presSpecs: document.getElementById('pres-specs'),
-                    statusBar: document.getElementById('status-bar'),
-                    connectBtn: document.getElementById('connect-btn')
-                };
-                this.ui.connectBtn.onclick = () => this.connectBase();
-            }
-            setStatus(msg) { this.ui.statusBar.innerText = msg; }
-            showIdle() { this.ui.presFrame.style.display = 'none'; this.ui.idleFrame.style.display = 'flex'; }
-            showComponent(figId) {
-                const comp = COMPONENTS[figId];
-                if (!comp) return;
-                this.ui.presIcon.innerText = comp.icon;
-                this.ui.presIcon.style.color = comp.color;
-                this.ui.presName.innerText = comp.name;
-                this.ui.presName.style.color = comp.color;
-                this.ui.presDesc.innerText = comp.desc;
-                this.ui.presLine.style.backgroundColor = comp.color;
-                this.ui.presSpecs.innerHTML = '';
-                comp.specs.forEach(spec => {
-                    const row = document.createElement('div');
-                    row.className = 'spec-row';
-                    row.innerHTML = `<span class="spec-bullet" style="color:${comp.color}">▸ </span><span>${spec}</span>`;
-                    this.ui.presSpecs.appendChild(row);
-                });
-                this.ui.idleFrame.style.display = 'none';
-                this.ui.presFrame.style.display = 'flex';
-            }
-            async connectBase() {
-                try {
-                    const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0e6f, productId: 0x0129 }] });
-                    if (devices.length === 0) return;
-                    const device = devices[0];
-                    await device.open();
-                    this.comms = new InfinityComms(device);
-                    await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
-                    this.light = new LightController(this.comms);
-                    this.light.start();
-                    this.setStatus("Base bağlı ✓");
-                    this.ui.connectBtn.style.display = 'none';
-                    this.baseLoop();
-                } catch (e) { this.setStatus("Bağlantı hatası: " + e.message); }
-            }
-            async baseLoop() {
-                while (this.running) {
-                    if (!this.comms || !this.comms.pendingResponse) { await new Promise(r => setTimeout(r, 100)); continue; }
-                    try {
-                        const resp = this.comms.pendingResponse;
-                        this.comms.pendingResponse = null;
-                        if (resp.length < 6 || resp[0] !== 0xab) continue;
-                        if (resp[2] !== 3) continue;
-                        if (resp[5] === 0x00) {
-                            await new Promise(r => setTimeout(r, 200));
-                            const figId = await readFigureId(this.comms, resp[4]);
-                            if (figId && COMPONENTS[figId]) {
-                                if (this.light) this.light.setColor(COMPONENTS[figId].rgb);
-                                this.showComponent(figId);
-                            }
-                        } else {
-                            if (this.light) this.light.setColor(RED);
-                            this.showIdle();
-                        }
-                    } catch (e) { await new Promise(r => setTimeout(r, 500)); }
-                }
-            }
-        }
-
-        window.onload = () => {
-            if (!navigator.hid) {
-                document.getElementById('status-bar').innerText = "Hata: Tarayıcınız WebHID desteklemiyor.";
-            } else {
-                new PyroApp();
-            }
-        };
-    </script>
+// Allow Enter key for login
+document.getElementById('password-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkLogin();
+});
+</script>
 </body>
 </html>
