@@ -201,7 +201,7 @@
     <!-- Login Screen -->
     <div id="login-screen" class="screen-container">
         <div class="glass-panel">
-            <h1>Admin Access</h1>
+            <h1>Admın Access</h1>
             <p class="subtitle">PHX Pyro Fuel</p>
             <div class="input-group">
                 <input type="password" id="password-input" placeholder="Password" autofocus>
@@ -251,7 +251,7 @@
                     <div class="detail-box">
                         <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">DETAY</h3>
                         <div id="p-detail"></div>
-                        <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;"></p>
+                        <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;">aaaaa</p>
                     </div>
                 </div>
 
@@ -514,7 +514,7 @@ class PyroApp {
         if (position !== 3) return;
 
         if (action === 0x00) {
-            this.setStatus("NFC TARANIYOR...");
+            this.setStatus("Scanning...");
             const figId = await readFigureId(this.comms, order);
             if (figId && COMPONENTS[figId]) {
                 if (this.lightCtrl) this.lightCtrl.setColor(COMPONENTS[figId].rgb);
