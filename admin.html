@@ -9,15 +9,16 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
 
         :root {
-            --bg-overlay: rgba(13, 0, 16, 0.85);
-            --panel-bg: rgba(20, 0, 32, 0.7);
-            --glass-border: rgba(107, 0, 204, 0.4);
-            --primary-purple: #8B00FF;
-            --accent-purple: #CC44FF;
-            --text-main: #e0d5f5;
-            --text-dim: #a388cc;
-            --error-red: #ff4d4d;
-            --glow: 0 0 15px rgba(139, 0, 255, 0.5);
+            /* Renk paleti PHX Pyro Fuel Turuncu ve Mavisi ile güncellendi */
+            --bg-overlay: rgba(10, 10, 15, 0.9); 
+            --panel-bg: rgba(20, 20, 30, 0.75); 
+            --glass-border: rgba(255, 107, 0, 0.3); 
+            --primary-orange: #FF6B00; /* PHX Turuncusu */
+            --accent-blue: #00BFFF;    /* PHX Mavisi */
+            --text-main: #f0f0f0;
+            --text-dim: #b0b0b0;
+            --error-red: #ff3333;
+            --glow: 0 0 15px rgba(255, 107, 0, 0.4);
         }
 
         body, html {
@@ -32,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* Background Overlay for readability */
         .bg-dimmer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -40,14 +40,13 @@
             z-index: -1;
         }
 
-        /* Top Corner Images */
         .corner-img {
             position: absolute;
             top: 20px;
             width: 120px;
             height: auto;
             z-index: 10;
-            filter: drop-shadow(0 0 8px var(--primary-purple));
+            filter: drop-shadow(0 0 8px var(--primary-orange));
         }
         .top-left { left: 30px; }
         .top-right { right: 30px; }
@@ -75,19 +74,18 @@
             width: 90%;
         }
 
-        /* --- Typography --- */
         h1, h2 { font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
-        h1 { color: var(--accent-purple); font-size: 24px; margin-bottom: 5px; text-shadow: var(--glow); }
-        .subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 25px; font-weight: 300; }
+        h1 { color: var(--primary-orange); font-size: 24px; margin-bottom: 5px; text-shadow: var(--glow); }
+        .subtitle { color: var(--accent-blue); font-size: 12px; margin-bottom: 25px; font-weight: 500; }
 
         /* --- UI Elements --- */
         .input-group { margin-bottom: 20px; }
         input[type="password"] {
             width: 100%;
-            background: rgba(30, 0, 46, 0.6);
-            border: 1px solid var(--primary-purple);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary-orange);
             border-radius: 5px;
-            color: #fff;
+            color: var(--primary-orange);
             padding: 12px;
             font-size: 18px;
             text-align: center;
@@ -95,10 +93,10 @@
             transition: 0.3s;
             box-sizing: border-box;
         }
-        input[type="password"]:focus { border-color: var(--accent-purple); box-shadow: var(--glow); }
+        input[type="password"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
 
         .btn-action {
-            background: linear-gradient(45deg, var(--primary-purple), var(--accent-purple));
+            background: linear-gradient(45deg, var(--primary-orange), #e65c00);
             color: white;
             border: none;
             padding: 12px 40px;
@@ -109,7 +107,7 @@
             font-family: 'Orbitron', sans-serif;
             transition: 0.3s;
         }
-        .btn-action:hover { transform: scale(1.05); box-shadow: var(--glow); }
+        .btn-action:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); }
 
         #login-error { color: var(--error-red); font-size: 13px; margin-top: 15px; height: 18px; font-weight: bold; }
 
@@ -125,7 +123,7 @@
 
         .app-header { text-align: center; margin-bottom: 30px; }
         .app-header h1 { font-size: 42px; margin: 0; }
-        .app-header .line { height: 2px; background: linear-gradient(90deg, transparent, var(--primary-purple), transparent); margin: 15px 0; }
+        .app-header .line { height: 2px; background: linear-gradient(90deg, transparent, var(--primary-orange), var(--accent-blue), transparent); margin: 15px 0; }
 
         .dashboard {
             flex: 1;
@@ -135,17 +133,15 @@
             position: relative;
         }
 
-        /* --- Idle View --- */
         #idle-view { text-align: center; animation: pulse 3s infinite; }
-        .hex-icon { font-size: 120px; color: var(--primary-purple); opacity: 0.4; margin-bottom: 20px; }
+        .hex-icon { font-size: 120px; color: var(--primary-orange); opacity: 0.4; margin-bottom: 20px; }
         .idle-text { font-size: 22px; color: var(--text-dim); }
 
-        /* --- Component Presentation --- */
         #pres-view {
             display: none;
             width: 100%;
             max-width: 1200px;
-            background: rgba(10, 0, 20, 0.6);
+            background: rgba(15, 15, 20, 0.9);
             padding: 30px;
             border-radius: 20px;
             border: 1px solid var(--glass-border);
@@ -155,20 +151,16 @@
         .comp-header { display: flex; align-items: center; gap: 30px; margin-bottom: 25px; }
         .comp-icon { font-size: 80px; }
         .comp-titles { flex: 1; }
-        .comp-titles h2 { font-size: 48px; margin: 0; }
-        .comp-titles p { font-size: 18px; color: var(--text-dim); margin-top: 5px; }
+        .comp-titles h2 { font-size: 48px; margin: 0; color: #fff; }
+        .comp-titles p { font-size: 18px; color: var(--accent-blue); margin-top: 5px; }
 
         .comp-body { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        .spec-list {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px;
-            border-radius: 10px;
-        }
+        .spec-list { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 10px; }
         .spec-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(139, 0, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 107, 0, 0.1);
             font-size: 14px;
         }
         .spec-label { color: var(--text-dim); font-weight: bold; }
@@ -181,7 +173,7 @@
             border-top: 1px solid var(--glass-border);
             text-align: center;
             font-style: italic;
-            color: var(--accent-purple);
+            color: var(--primary-orange);
         }
 
         #status-bar {
@@ -190,12 +182,11 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 12px;
-            color: var(--text-dim);
+            color: var(--accent-blue);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
-        /* Animations */
         @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -204,9 +195,8 @@
 
     <div class="bg-dimmer"></div>
     
-    <!-- Custom Images from User -->
-    <img src="images/wasdas.png" class="corner-img top-left" alt="Left Logo">
-    <img src="images/adasa.png" class="corner-img top-right" alt="Right Logo">
+    <img src="images/gencbizzlogo.png" class="corner-img top-left" alt="GencBizz">
+    <img src="images/gsbllogo.png" class="corner-img top-right" alt="GSBL">
 
     <!-- Login Screen -->
     <div id="login-screen" class="screen-container">
@@ -214,7 +204,7 @@
             <h1>PHX PYRO FUEL</h1>
             <p class="subtitle">MAKE WASTE FUEL AGAIN</p>
             <div class="input-group">
-                <input type="password" id="password-input" placeholder="YÖNETİCİ ŞİFRESİ">
+                <input type="password" id="password-input" placeholder="YÖNETİCİ ŞİFRESİ" autofocus>
             </div>
             <button class="btn-action" onclick="checkLogin()">SİSTEME GİRİŞ</button>
             <div id="login-error"></div>
@@ -239,13 +229,11 @@
         </div>
 
         <div class="dashboard">
-            <!-- IDLE VIEW -->
             <div id="idle-view">
                 <div class="hex-icon">⬢</div>
                 <div class="idle-text">Analiz için bir bileşeni base ünitesine yerleştirin</div>
             </div>
 
-            <!-- PRESENTATION VIEW -->
             <div id="pres-view">
                 <div class="comp-header">
                     <div id="p-icon" class="comp-icon"></div>
@@ -257,11 +245,11 @@
                 
                 <div class="comp-body">
                     <div class="spec-list">
-                        <h3 style="margin-top:0; font-size:14px; color:var(--accent-purple)">TEKNİK VERİLER</h3>
+                        <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">TEKNİK VERİLER</h3>
                         <div id="p-specs"></div>
                     </div>
                     <div class="detail-box">
-                        <h3 style="margin-top:0; font-size:14px; color:var(--accent-purple)">SİSTEM DETAYI</h3>
+                        <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">SİSTEM DETAYI</h3>
                         <div id="p-detail"></div>
                         <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;"></p>
                     </div>
@@ -284,7 +272,7 @@ const SHA1_CONSTANT = [
 ];
 
 const ADMIN_PASSWORD = "xlyn";
-const RED_RGB = [204, 0, 0];
+const ORANGE_RGB = [255, 107, 0]; // Varsayılan Turuncu LED rengi
 
 const COMPONENTS = {
     0xc52257: {
@@ -303,7 +291,7 @@ const COMPONENTS = {
             ["Malzeme", "316L Paslanmaz"],
         ],
         "sdg": "BM SKA 12: Sorumlu Üretim ve Tüketim",
-        "detail": "Kondenser ünitesi, sistemin toplam verimliliğini doğrudan etkiler. Deniz suyunu soğutma ortamı olarak kullanması sayesinde ek enerji tüketimi sıfırdır. Çıkan sıvı, IMO 2020 uyumlu düşük kükürtlü yakıt kalitesindedir."
+        "detail": "Kondenser ünitesi, sistemin toplam verimliliğini doğrudan etkiler. Deniz suyunu soğutma ortamı olarak kullanması sayesinde ek enerji tüketimi sıfırdır."
     },
     0x4cd171: {
         "name": "Vidalı Konveyör",
@@ -321,31 +309,13 @@ const COMPONENTS = {
             ["Malzeme", "S235 Çelik"],
         ],
         "sdg": "BM SKA 14: Sudaki Yaşam",
-        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır."
-    },
-    0x7a376a: {
-        "name": "Vidalı Konveyör",
-        "subtitle": "Atık Besleme Ünitesi",
-        "color": "#FFD700",
-        "rgb": [255, 215, 0],
-        "icon": "⚙",
-        "desc": "Okyanuslardan toplanan plastik atıklar vidalı konveyör sistemi ile kontrollü şekilde piroliz reaktörüne iletilir.",
-        "specs": [
-            ["Kapasite", "400 kg/gün"],
-            ["Vida Çapı", "80 mm"],
-            ["Motor", "1,5 kW"],
-            ["Sistem", "Kapalı, sızdırmaz"],
-            ["Kontrol", "PLC Otomatik"],
-            ["Malzeme", "S235 Çelik"],
-        ],
-        "sdg": "BM SKA 14: Sudaki Yaşam",
-        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrol sistemi sayesinde besleme hızı reaktör kapasitesine göre otomatik ayarlanır."
+        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrolü ile besleme hızı otomatik ayarlanır."
     },
     0x9981f8: {
         "name": "Piroliz Reaktörü",
         "subtitle": "Sistemin Kalbi — Isıl Ayrışma",
-        "color": "#CC0000",
-        "rgb": [204, 0, 0],
+        "color": "#FF4500",
+        "rgb": [255, 69, 0],
         "icon": "🔥",
         "desc": "Plastik atıklar oksijensiz ortamda 350–500°C'de ısıtılarak yakıt bileşenlerine dönüştürülür.",
         "specs": [
@@ -380,8 +350,8 @@ const COMPONENTS = {
     0x1ac5a4: {
         "name": "Depolama Tankı",
         "subtitle": "Yakıt Depolama Ünitesi",
-        "color": "#8B00FF",
-        "rgb": [139, 0, 255],
+        "color": "#FF6B00",
+        "rgb": [255, 107, 0],
         "icon": "🛢",
         "desc": "Üretilen sıvı piroliz yakıtı IMO 2020 regülasyonlarına uygun şekilde depolanır.",
         "specs": [
@@ -393,13 +363,10 @@ const COMPONENTS = {
             ["Kullanım", "Gemi / Satış"],
         ],
         "sdg": "BM SKA 12: Sorumlu Üretim",
-        "detail": "Üretilen LSFO, denizcilik sektöründe talep gören yüksek değerli bir emtiadır. Geminin kendi ihtiyacını karşıladıktan sonra kalan yakıt limanlarda satılabilir."
-    },
+        "detail": "Üretilen LSFO, denizcilik sektöründe talep gören yüksek değerli bir emtiadır. Gemi kendi ihtiyacını karşıladıktan sonra kalan yakıt limanlarda satılabilir."
+    }
 };
 
-/**
- * COMMUNICATION CLASS
- */
 class InfinityComms {
     constructor(device) {
         this.device = device;
@@ -428,8 +395,7 @@ class InfinityComms {
         const msgId = this.nextId();
         const body = [command, msgId, ...data];
         const packet = new Uint8Array(32);
-        packet[0] = 0xff;
-        packet[1] = body.length;
+        packet[0] = 0xff; packet[1] = body.length;
         for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
         
         let checksum = 0;
@@ -455,8 +421,7 @@ class InfinityComms {
         const msgId = this.nextId();
         const body = [command, msgId, ...data];
         const packet = new Uint8Array(32);
-        packet[0] = 0xff;
-        packet[1] = body.length;
+        packet[0] = 0xff; packet[1] = body.length;
         for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
         
         let checksum = 0;
@@ -467,9 +432,6 @@ class InfinityComms {
     }
 }
 
-/**
- * NFC & CRYPTO
- */
 function deriveKey(uid) {
     const sha1Calc = new Uint8Array(38);
     sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
@@ -511,13 +473,10 @@ async function readFigureId(comms, order) {
     } catch (e) { return null; }
 }
 
-/**
- * LIGHT CONTROLLER
- */
 class LightController {
     constructor(comms) {
         this.comms = comms;
-        this.currentRgb = RED_RGB;
+        this.currentRgb = ORANGE_RGB;
         this.interval = null;
         this.start();
     }
@@ -533,9 +492,6 @@ class LightController {
     }
 }
 
-/**
- * MAIN APP
- */
 class PyroApp {
     constructor(device) {
         this.comms = new InfinityComms(device);
@@ -566,7 +522,7 @@ class PyroApp {
                 this.setStatus(`ANALİZ TAMAMLANDI: ${COMPONENTS[figId].name}`);
             }
         } else {
-            if (this.lightCtrl) this.lightCtrl.setColor(RED_RGB);
+            if (this.lightCtrl) this.lightCtrl.setColor(ORANGE_RGB);
             this.showIdle();
             this.setStatus("BAĞLANTI AKTİF — FİGÜR BEKLENİYOR");
         }
@@ -603,9 +559,6 @@ class PyroApp {
     setStatus(msg) { document.getElementById('status-bar').innerText = msg; }
 }
 
-/**
- * UI CONTROLS
- */
 function checkLogin() {
     const input = document.getElementById('password-input').value;
     if (input === ADMIN_PASSWORD) {
@@ -630,7 +583,10 @@ async function initHID() {
     } catch (e) { alert("Bağlantı hatası: " + e.message); }
 }
 
-document.getElementById('password-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkLogin(); });
+// ENTER tuşu kontrolü - login ekranı için
+document.getElementById('password-input').addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter') checkLogin(); 
+});
 </script>
 </body>
 </html>
