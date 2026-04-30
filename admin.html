@@ -284,7 +284,7 @@ const COMPONENTS = {
         "color": "#00BFFF",
         "rgb": [0, 191, 255],
         "icon": "❄",
-        "desc": "Piroliz reaktöründen çıkan yüksek sıcaklıktaki gaz karışımı kondenser ünitesinde soğutularak sıvı yakıta dönüştürülür.",
+        "desc": "Reaktörden yükselen sıcak hidrokarbon gazlarının sıvı enerjiye dönüştüğü Kondenser ünitesi, gemi üzerindeki kısıtlı alanlar ve soğutma ihtiyaçları düşünülerek deniz suyu soğutmalı kabuk-boru (shell-tube) tipi bir eşanjör yapısıyla tasarlanmıştır. Reaktörden gelen yüksek sıcaklıktaki gazları ani bir şokla soğutarak yoğunlaştıran bu birim, %85-92 arasındaki olağanüstü yüksek verimlilik oranıyla çalışarak gaz fazındaki karışımın büyük bir bölümünü denizcilik standartlarına uygun, yüksek değerli düşük kükürtlü sıvı yakıta (LSFO) dönüştürür. Kondenserin bu performansı, atığın ne kadarının geri kazanılabileceğini belirleyen en temel faktörlerden biridir ve üretilen yakıtın kalitesini doğrudan belirler.",
         "specs": [
             ["Tip", "Kabuk-boru eşanjör"],
             ["Soğutma", "Deniz suyu devresi"],
@@ -294,15 +294,14 @@ const COMPONENTS = {
             ["Malzeme", "316L Paslanmaz"],
         ],
         "sdg": "BM SKA 12: Sorumlu Üretim ve Tüketim",
-        "detail": "Kondenser ünitesi, sistemin toplam verimliliğini doğrudan etkiler. Deniz suyunu soğutma ortamı olarak kullanması sayesinde ek enerji tüketimi sıfırdır."
     },
     0x7a376a: {
-        "name": "Vidalı Konveyör",
-        "subtitle": "Atık Besleme Ünitesi",
+        "name": "Besleme Ünitesi",
+        "subtitle": "Vidalı Konveyör",
         "color": "#FFD700",
         "rgb": [255, 215, 0],
         "icon": "⚙",
-        "desc": "Okyanuslardan toplanan plastik atıklar vidalı konveyör sistemi ile kontrollü şekilde piroliz reaktörüne iletilir.",
+        "desc": "Besleme Ünitesi, okyanuslardan toplanan plastik atıkların sisteme giriş yaptığı ilk ve en kritik mekanik aşamadır. Operasyonel sürekliliği ve sistemin tıkanmadan çalışmasını sağlamak amacıyla, 400 kg/gün gibi yüksek bir kapasiteye sahip olan dayanıklı bir vidalı konveyör (helezon) mekanizmasıyla donatılmıştır. Bu ünite, atıkların piroliz reaktörüne herhangi bir manuel müdahale gerektirmeden, önceden belirlenmiş düzenli ve kontrollü bir hızda aktarılmasını sağlayarak sistemin tam otonom çalışma kabiliyetini doğrudan destekler. Hammaddenin fiziksel formundan veya yoğunluğundan bağımsız olarak reaktöre kesintisiz bir besleme akışı sunan bu mekanik yapı, içerideki termal işlemin kararlılığını koruyarak sistemin genel verimliliğini en üst seviyeye çıkarır.",
         "specs": [
             ["Kapasite", "400 kg/gün"],
             ["Vida Çapı", "80 mm"],
@@ -312,7 +311,6 @@ const COMPONENTS = {
             ["Malzeme", "S235 Çelik"],
         ],
         "sdg": "BM SKA 14: Sudaki Yaşam",
-        "detail": "Besleme ünitesi, atık plastiklerin düzenli ve güvenli şekilde reaktöre aktarılmasını sağlar. PLC kontrolü ile besleme hızı otomatik ayarlanır."
     },
     0x9981f8: {
         "name": "Piroliz Reaktörü",
@@ -320,7 +318,7 @@ const COMPONENTS = {
         "color": "#FF4500",
         "rgb": [255, 69, 0],
         "icon": "🔥",
-        "desc": "Plastik atıklar oksijensiz ortamda 350–500°C'de ısıtılarak yakıt bileşenlerine dönüştürülür.",
+        "desc": "Sistemin kalbi ve ana işlem merkezi olarak işlev gören Piroliz Reaktörü, Ø1.2m x H1.8m boyutlarında olup, denizcilik koşullarındaki yüksek korozyona ve ekstrem sıcaklıklara dayanabilmesi için 316L kalite paslanmaz çelikten imal edilmiş devasa bir fırın yapısına sahiptir. Bu ünite içerisinde plastik atıklar, oksijenden tamamen arındırılmış bir atmosferde 350-500°C arasındaki çok yüksek sıcaklıklara maruz bırakılarak kimyasal bir ısıl ayrışma sürecine sokulur. İşlemin hızı ve elde edilecek son ürünün kalitesini optimize etmek amacıyla reaktör içerisinde özel bir ZSM-5 zeolit katalizörü kullanılır; bu katalizör sayesinde polimer zincirleri çok daha etkin bir şekilde kırılarak plastikler verimli bir şekilde gaz fazına geçirilir.",
         "specs": [
             ["Çalışma Isısı", "350–500°C"],
             ["Kapasite", "400 kg plastik/gün"],
@@ -330,7 +328,6 @@ const COMPONENTS = {
             ["Güvenlik", "Emniyet Ventili"],
         ],
         "sdg": "BM SKA 13: İklim Eylemi",
-        "detail": "1 kg plastikten yaklaşık 650 ml sıvı yakıt elde edilir. ZSM-5 katalizör sistemi ürün kalitesini iyileştirerek IMO 2020 uyumlu LSFO üretimini garanti eder."
     },
     0xebe124: {
         "name": "NCG Geri Besleme",
@@ -338,7 +335,7 @@ const COMPONENTS = {
         "color": "#00CC00",
         "rgb": [0, 204, 0],
         "icon": "♻",
-        "desc": "Yoğunlaşmayan gazlar reaktörün ısıtma sistemine geri beslenerek yakıt olarak kullanılır.",
+        "desc": "Piroliz sürecinin bir parçası olarak ortaya çıkan ancak yoğunlaştırılamayan yanıcı gazların yönetimi, NCG Geri Besleme ünitesi tarafından son derece stratejik bir şekilde gerçekleştirilerek bu gazların çevreye salınmak yerine sistem içinde değerlendirilmesi sağlanır. Kondenser aşamasında sıvı faza geçemeyen bu yoğuşmayan gazlar (Non-Condensable Gas), enerji tasarrufu ve çevresel emisyon kontrolü sağlamak üzere özel bir hat üzerinden reaktörün yanma odasına geri yönlendirilir. Bu kapalı döngü geri besleme mekanizması sayesinde sistem, reaktörü ısıtmak için gereken devasa enerjinin bir kısmını kendi ürettiği bu gazdan karşılayarak hem operasyonel maliyetleri ciddi oranda düşürür hem de geminin dış enerji kaynaklarına olan bağımlılığını minimize eder.",
         "specs": [
             ["Gaz Debisi", "~170 g/kg plastik"],
             ["Boru Çapı", "25 mm"],
@@ -348,7 +345,6 @@ const COMPONENTS = {
             ["Güvenlik", "Sensör Entegreli"],
         ],
         "sdg": "BM SKA 7: Temiz Enerji",
-        "detail": "NCG sistemi, piroliz prosesinin enerji bağımsızlığını artırır. Normalde atılacak gazlar sisteme geri kazandırılarak dış enerji ihtiyacı minimuma indirilir."
     },
     0x1ac5a4: {
         "name": "Depolama Tankı",
@@ -356,7 +352,7 @@ const COMPONENTS = {
         "color": "#FF6B00",
         "rgb": [255, 107, 0],
         "icon": "🛢",
-        "desc": "Üretilen sıvı piroliz yakıtı IMO 2020 regülasyonlarına uygun şekilde depolanır.",
+        "desc": "Sürecin nihai durağı ve elde edilen değerin muhafaza edildiği yer olan Yakıt Depolama ünitesi, üretilen enerjinin gemi operasyonlarında kullanılmak üzere 500 litre kapasiteli, güvenlik standartları yüksek özel bir tankta toplandığı son halkadır. Sistemden çıkan ve depolanan bu yakıt, IMO 2020 küresel denizcilik regülasyonlarına tam uyumlu olacak şekilde ≤%0.5 kükürt oranına sahiptir ve herhangi bir ek işleme gerek kalmadan doğrudan geminin ana makine veya jeneratör sistemlerine aktarılabilir. PLC kontrol sistemi, emniyet ventilleri ve patlama diskleri gibi üst düzey güvenlik donanımlarıyla korunan bu depolama birimi, okyanuslardan toplanan plastik kirliliğinin artık stratejik ve ekonomik bir yakıt olarak geminin enerji devresine tam entegre edildiği noktadır.",
         "specs": [
             ["Hacim", "500 Litre"],
             ["Kükürt Oranı", "≤%0,5 (IMO 2020)"],
@@ -366,7 +362,6 @@ const COMPONENTS = {
             ["Kullanım", "Gemi / Satış"],
         ],
         "sdg": "BM SKA 12: Sorumlu Üretim",
-        "detail": "Üretilen LSFO, denizcilik sektöründe talep gören yüksek değerli bir emtiadır. Gemi kendi ihtiyacını karşıladıktan sonra kalan yakıt limanlarda satılabilir."
     }
 };
 
