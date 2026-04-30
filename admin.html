@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PHX Prototype</title>
+    
+    <!-- Sekme Logosu (Favicon) Eklendi -->
+    <link rel="icon" type="image/png" href="images/phxlogo.png">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
 
         :root {
-            /* Renk paleti PHX Pyro Fuel Turuncu ve Mavisi ile güncellendi */
             --bg-overlay: rgba(10, 10, 15, 0.9); 
             --panel-bg: rgba(20, 20, 30, 0.75); 
             --glass-border: rgba(255, 107, 0, 0.3); 
@@ -251,7 +254,7 @@
                     <div class="detail-box">
                         <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">DETAY</h3>
                         <div id="p-detail"></div>
-                        <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;">aaaaa</p>
+                        <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;"></p>
                     </div>
                 </div>
 
@@ -272,7 +275,7 @@ const SHA1_CONSTANT = [
 ];
 
 const ADMIN_PASSWORD = "xlyn";
-const ORANGE_RGB = [255, 107, 0]; // Varsayılan Turuncu LED rengi
+const ORANGE_RGB = [255, 107, 0]; 
 
 const COMPONENTS = {
     0xc52257: {
@@ -583,7 +586,6 @@ async function initHID() {
     } catch (e) { alert("Connection Error: " + e.message); }
 }
 
-// ENTER tuşu kontrolü - login ekranı için
 document.getElementById('password-input').addEventListener('keypress', (e) => { 
     if (e.key === 'Enter') checkLogin(); 
 });
