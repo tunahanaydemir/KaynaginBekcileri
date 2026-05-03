@@ -118,62 +118,83 @@
 					</section>
 
 				<!-- Three -->
-					<section id="three" class="wrapper style1 fade-up">
-						<div class="inner">
-							<h2>İletişime Geçin</h2>
-							<div class="split style1">
-								<section>
-									<form method="post" action="#">
-										<div class="fields">
-											<div class="field half">
-												<label for="name">Ad-Soyad</label>
-												<input type="text" name="name" id="name" />
-											</div>
-											<div class="field half">
-												<label for="email">E-Posta</label>
-												<input type="text" name="email" id="email" />
-											</div>
-											<div class="field">
-												<label for="message">Mesaj</label>
-												<textarea name="message" id="message" rows="5"></textarea>
-											</div>
-										</div>
-										<ul class="actions">
-											<li><a href="" class="button submit">Mesaj Gönder</a></li>
-										</ul>
-									</form>
-								</section>
-								<section>
-									<ul class="contact">
-										<li>
-											<h3>Adres</h3>
-											<span>Davraz Mah.3993 Sok. Süleyman Demirel Eğitim Kompleksi<br />
-											No 14/1 32300 Merkez Isparta<br />
-											TR</span>
-										</li>
-										<li>
-											<h3>E-Posta</h3>
-											<a href="#">user@untitled.tld</a>
-										</li>
-										<li>
-											<h3>Telefon</h3>
-											<span>(246) 223 7986</span>
-										</li>
-										<li>
-											<h3>Sosyal Medya</h3>
-											<ul class="icons">
-												<li><a href="https://github.com/tunahanaydemir" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-												<li><a href="https://www.instagram.com/phxpyrofuel/" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-											</ul>
-										</li>
-									</ul>
-								</section>
-							</div>
-						</div>
-					</section>
+<section id="three" class="wrapper style1 fade-up">
+    <div class="inner">
+        <h2>İletişime Geçin</h2>
+        <div class="split style1">
+            <section>
+                <form id="contactForm">
+                    <div class="fields">
+                        <div class="field half">
+                            <label for="name">Ad-Soyad</label>
+                            <input type="text" name="name" id="name" />
+                        </div>
+                        <div class="field half">
+                            <label for="email">E-Posta</label>
+                            <input type="text" name="email" id="email" />
+                        </div>
+                        <div class="field">
+                            <label for="message">Mesaj</label>
+                            <textarea name="message" id="message" rows="5"></textarea>
+                        </div>
+                    </div>
+                    <ul class="actions">
+                        <li><button type="button" class="button submit" onclick="sendMail()">Mesaj Gönder</button></li>
+                    </ul>
+                </form>
+            </section>
+            <section>
+                <ul class="contact">
+                    <li>
+                        <h3>Adres</h3>
+                        <span>Davraz Mah.3993 Sok. Süleyman Demirel Eğitim Kompleksi<br />
+                        No 14/1 32300 Merkez Isparta<br />
+                        TR</span>
+                    </li>
+                    <li>
+                        <h3>E-Posta</h3>
+                        <a href="mailto:phxpyrofuels@gmail.com">phxpyrofuels@gmail.com</a>
+                    </li>
+                    <li>
+                        <h3>Telefon</h3>
+                        <span>(246) 223 7986</span>
+                    </li>
+                    <li>
+                        <h3>Sosyal Medya</h3>
+                        <ul class="icons">
+                            <li><a href="https://github.com/tunahanaydemir" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                            <li><a href="https://www.instagram.com/phxpyrofuel/" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </div>
+</section>
 
-			</div>
+<script>
+function sendMail() {
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
 
+    if (!name || !email || !message) {
+        alert('Lütfen tüm alanları doldurun.');
+        return;
+    }
+
+    const to      = 'senin@gmail.com'; // ← Buraya kendi mail adresini yaz
+    const subject = encodeURIComponent('Web Sitesi İletişim Formu - ' + name);
+    const body    = encodeURIComponent(
+        'Ad Soyad: ' + name + '\n' +
+        'E-Posta: '  + email + '\n\n' +
+        'Mesaj:\n'   + message
+    );
+
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+}
+</script>
+				
 		<!-- Footer -->
 			<footer id="footer" class="wrapper style1-alt">
 				<div class="inner">
