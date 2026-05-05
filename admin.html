@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PHX Prototype</title>
+    <script>
+  async function keepScreenAwake() {
+    try {
+      if ('wakeLock' in navigator) {
+        let wakeLock = await navigator.wakeLock.request('screen');
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible') {
+            wakeLock = await navigator.wakeLock.request('screen');
+          }
+        });
+      }
+    } catch (e) {}
+  }
+  keepScreenAwake();
+</script>
     
-    <!-- Sekme Logosu (Favicon) Eklendi -->
     <link rel="icon" type="image/png" href="images/favicon3.png">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
@@ -16,8 +29,8 @@
             --bg-overlay: rgba(10, 10, 15, 0.9); 
             --panel-bg: rgba(20, 20, 30, 0.75); 
             --glass-border: rgba(255, 107, 0, 0.3); 
-            --primary-orange: #FF6B00; /* PHX Turuncusu */
-            --accent-blue: #00BFFF;    /* PHX Mavisi */
+            --primary-orange: #FF6B00;
+            --accent-blue: #00BFFF;
             --text-main: #f0f0f0;
             --text-dim: #b0b0b0;
             --error-red: #ff3333;
@@ -54,7 +67,6 @@
         .top-left { left: 30px; }
         .top-right { right: 30px; }
 
-        /* --- Screens --- */
         .screen-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -81,7 +93,6 @@
         h1 { color: var(--primary-orange); font-size: 24px; margin-bottom: 5px; text-shadow: var(--glow); }
         .subtitle { color: var(--accent-blue); font-size: 12px; margin-bottom: 25px; font-weight: 500; }
 
-        /* --- UI Elements --- */
         .input-group { margin-bottom: 20px; }
         input[type="password"] {
             width: 100%;
@@ -114,7 +125,6 @@
 
         #login-error { color: var(--error-red); font-size: 13px; margin-top: 15px; height: 18px; font-weight: bold; }
 
-        /* --- Main App UI --- */
         #main-app {
             display: none;
             flex-direction: column;
@@ -149,6 +159,24 @@
             border-radius: 20px;
             border: 1px solid var(--glass-border);
             animation: fadeIn 0.5s ease-out;
+        }
+
+        #gif-view {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #gif-view img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .comp-header { display: flex; align-items: center; gap: 30px; margin-bottom: 25px; }
@@ -188,6 +216,7 @@
             color: var(--accent-blue);
             letter-spacing: 1px;
             text-transform: uppercase;
+            z-index: 600;
         }
 
         @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
@@ -217,8 +246,7 @@
     <!-- HID Permission Prompt -->
     <div id="hid-overlay" class="screen-container" style="display:none;">
         <div class="glass-panel" style="border-color: var(--error-red);">
-            <h1 style="color: var(--error-red);">PHX Base Not Found</h1>
-            <p class="subtitle">Connect hardware to begin</p>
+            <h1 style="color: var(--error-red);">Connect hardware to begin</h1>
             <button class="btn-action" onclick="initHID()">Connect</button>
         </div>
     </div>
@@ -263,6 +291,11 @@
         </div>
     </div>
 
+    <!-- GIF Full Screen View -->
+    <div id="gif-view">
+        <img src="images/animasyon.gif" alt="Animasyon">
+    </div>
+
     <div id="status-bar">WAITING FOR SYSTEM CONNECTION...</div>
 
 <script>
@@ -275,15 +308,18 @@ const SHA1_CONSTANT = [
 ];
 
 const ADMIN_PASSWORD = "xlyn";
-const ORANGE_RGB = [255, 107, 0]; 
+
+// Special figure ID that triggers GIF view
+const GIF_FIGURE_ID = 0x9722B7;
 
 const COMPONENTS = {
     0xc52257: {
         "name": "Kondenser",
         "subtitle": "Gaz Soğutma ve Sıvılaştırma Ünitesi",
         "color": "#00BFFF",
-        "rgb": [0, 191, 255],
         "icon": "❄",
+        // Açık mavi <-> Lacivert fade
+        "lightColors": [[0, 191, 255], [0, 0, 139]],
         "desc": "Reaktörden yükselen sıcak hidrokarbon gazlarının sıvı enerjiye dönüştüğü Kondenser ünitesi, gemi üzerindeki kısıtlı alanlar ve soğutma ihtiyaçları düşünülerek deniz suyu soğutmalı kabuk-boru (shell-tube) tipi bir eşanjör yapısıyla tasarlanmıştır. Reaktörden gelen yüksek sıcaklıktaki gazları ani bir şokla soğutarak yoğunlaştıran bu birim, %85-92 arasındaki olağanüstü yüksek verimlilik oranıyla çalışarak gaz fazındaki karışımın büyük bir bölümünü denizcilik standartlarına uygun, yüksek değerli düşük kükürtlü sıvı yakıta (LSFO) dönüştürür. Kondenserin bu performansı, atığın ne kadarının geri kazanılabileceğini belirleyen en temel faktörlerden biridir ve üretilen yakıtın kalitesini doğrudan belirler.",
         "specs": [
             ["Tip", "Kabuk-boru eşanjör"],
@@ -300,8 +336,9 @@ const COMPONENTS = {
         "name": "Besleme Ünitesi",
         "subtitle": "Vidalı Konveyör",
         "color": "#FFD700",
-        "rgb": [255, 215, 0],
         "icon": "⚙",
+        // Sapsarı <-> Turuncu fade
+        "lightColors": [[255, 215, 0], [255, 80, 0]],
         "desc": "Besleme Ünitesi, okyanuslardan toplanan plastik atıkların sisteme giriş yaptığı ilk ve en kritik mekanik aşamadır. Operasyonel sürekliliği ve sistemin tıkanmadan çalışmasını sağlamak amacıyla, 400 kg/gün gibi yüksek bir kapasiteye sahip olan dayanıklı bir vidalı konveyör (helezon) mekanizmasıyla donatılmıştır. Bu ünite, atıkların piroliz reaktörüne herhangi bir manuel müdahale gerektirmeden, önceden belirlenmiş düzenli ve kontrollü bir hızda aktarılmasını sağlayarak sistemin tam otonom çalışma kabiliyetini doğrudan destekler. Hammaddenin fiziksel formundan veya yoğunluğundan bağımsız olarak reaktöre kesintisiz bir besleme akışı sunan bu mekanik yapı, içerideki termal işlemin kararlılığını koruyarak sistemin genel verimliliğini en üst seviyeye çıkarır.",
         "specs": [
             ["Kapasite", "400 kg/gün"],
@@ -318,8 +355,9 @@ const COMPONENTS = {
         "name": "Piroliz Reaktörü",
         "subtitle": "Sistemin Kalbi — Isıl Ayrışma",
         "color": "#FF4500",
-        "rgb": [255, 69, 0],
         "icon": "🔥",
+        // Kırmızı <-> Mor fade
+        "lightColors": [[255, 0, 0], [128, 0, 200]],
         "desc": "Sistemin kalbi ve ana işlem merkezi olarak işlev gören Piroliz Reaktörü, Ø1.2m x H1.8m boyutlarında olup, denizcilik koşullarındaki yüksek korozyona ve ekstrem sıcaklıklara dayanabilmesi için 316L kalite paslanmaz çelikten imal edilmiş devasa bir fırın yapısına sahiptir. Bu ünite içerisinde plastik atıklar, oksijenden tamamen arındırılmış bir atmosferde 350-500°C arasındaki çok yüksek sıcaklıklara maruz bırakılarak kimyasal bir ısıl ayrışma sürecine sokulur. İşlemin hızı ve elde edilecek son ürünün kalitesini optimize etmek amacıyla reaktör içerisinde özel bir ZSM-5 zeolit katalizörü kullanılır; bu katalizör sayesinde polimer zincirleri çok daha etkin bir şekilde kırılarak plastikler verimli bir şekilde gaz fazına geçirilir.",
         "specs": [
             ["Çalışma Isısı", "350–500°C"],
@@ -336,8 +374,9 @@ const COMPONENTS = {
         "name": "NCG Geri Besleme",
         "subtitle": "Gaz Geri Kazanım Sistemi",
         "color": "#00CC00",
-        "rgb": [0, 204, 0],
         "icon": "♻",
+        // Yeşil <-> Cyan fade
+        "lightColors": [[0, 200, 0], [0, 255, 200]],
         "desc": "Piroliz sürecinin bir parçası olarak ortaya çıkan ancak yoğunlaştırılamayan yanıcı gazların yönetimi, NCG Geri Besleme ünitesi tarafından son derece stratejik bir şekilde gerçekleştirilerek bu gazların çevreye salınmak yerine sistem içinde değerlendirilmesi sağlanır. Kondenser aşamasında sıvı faza geçemeyen bu yoğuşmayan gazlar (Non-Condensable Gas), enerji tasarrufu ve çevresel emisyon kontrolü sağlamak üzere özel bir hat üzerinden reaktörün yanma odasına geri yönlendirilir. Bu kapalı döngü geri besleme mekanizması sayesinde sistem, reaktörü ısıtmak için gereken devasa enerjinin bir kısmını kendi ürettiği bu gazdan karşılayarak hem operasyonel maliyetleri ciddi oranda düşürür hem de geminin dış enerji kaynaklarına olan bağımlılığını minimize eder.",
         "specs": [
             ["Gaz Debisi", "~170 g/kg plastik"],
@@ -354,26 +393,9 @@ const COMPONENTS = {
         "name": "Depolama Tankı",
         "subtitle": "Yakıt Depolama Ünitesi",
         "color": "#FF6B00",
-        "rgb": [255, 107, 0],
         "icon": "🛢",
-        "desc": "Sürecin nihai durağı ve elde edilen değerin muhafaza edildiği yer olan Yakıt Depolama ünitesi, üretilen enerjinin gemi operasyonlarında kullanılmak üzere 500 litre kapasiteli, güvenlik standartları yüksek özel bir tankta toplandığı son halkadır. Sistemden çıkan ve depolanan bu yakıt, IMO 2020 küresel denizcilik regülasyonlarına tam uyumlu olacak şekilde ≤%0.5 kükürt oranına sahiptir ve herhangi bir ek işleme gerek kalmadan doğrudan geminin ana makine veya jeneratör sistemlerine aktarılabilir. PLC kontrol sistemi, emniyet ventilleri ve patlama diskleri gibi üst düzey güvenlik donanımlarıyla korunan bu depolama birimi, okyanuslardan toplanan plastik kirliliğinin artık stratejik ve ekonomik bir yakıt olarak geminin enerji devresine tam entegre edildiği noktadır.",
-        "specs": [
-            ["Hacim", "500 Litre"],
-            ["Kükürt Oranı", "≤%0,5 (IMO 2020)"],
-            ["Ürün Tipi", "LSFO Yakıt Yağı"],
-            ["Malzeme", "HDPE / Paslanmaz"],
-            ["Ölçüm", "Dijital Debi"],
-            ["Kullanım", "Gemi / Satış"],
-        ],
-        "sdg": "BM SKA 12: Sorumlu Üretim",
-        "detail": "Üretilen Düşük Kükürtlü Enerjiyi Gemi Motoru İçin Hazır Tutan Güvenli Tank Sistemi"
-    },
-    0x9722B7: {
-       "name": "Depolama Tankı",
-        "subtitle": "Yakıt Depolama Ünitesi",
-        "color": "#FF6B00",
-        "rgb": [255, 107, 0],
-        "icon": "🛢",
+        // Mor <-> Koyu lacivert fade
+        "lightColors": [[150, 0, 200], [0, 0, 100]],
         "desc": "Sürecin nihai durağı ve elde edilen değerin muhafaza edildiği yer olan Yakıt Depolama ünitesi, üretilen enerjinin gemi operasyonlarında kullanılmak üzere 500 litre kapasiteli, güvenlik standartları yüksek özel bir tankta toplandığı son halkadır. Sistemden çıkan ve depolanan bu yakıt, IMO 2020 küresel denizcilik regülasyonlarına tam uyumlu olacak şekilde ≤%0.5 kükürt oranına sahiptir ve herhangi bir ek işleme gerek kalmadan doğrudan geminin ana makine veya jeneratör sistemlerine aktarılabilir. PLC kontrol sistemi, emniyet ventilleri ve patlama diskleri gibi üst düzey güvenlik donanımlarıyla korunan bu depolama birimi, okyanuslardan toplanan plastik kirliliğinin artık stratejik ve ekonomik bir yakıt olarak geminin enerji devresine tam entegre edildiği noktadır.",
         "specs": [
             ["Hacim", "500 Litre"],
@@ -387,6 +409,13 @@ const COMPONENTS = {
         "detail": "Üretilen Düşük Kükürtlü Enerjiyi Gemi Motoru İçin Hazır Tutan Güvenli Tank Sistemi"
     }
 };
+
+// GIF figure light colors: Kırmızı <-> Beyaz fade
+const GIF_LIGHT_COLORS = [[255, 0, 0], [255, 255, 255]];
+
+// Idle/boşta: Kırmızı flash (açık-kapalı, sabit hız)
+const IDLE_FLASH_COLOR = [255, 0, 0];
+const OFF_COLOR = [0, 0, 0];
 
 class InfinityComms {
     constructor(device) {
@@ -494,22 +523,81 @@ async function readFigureId(comms, order) {
     } catch (e) { return null; }
 }
 
+/**
+ * LightController
+ * 
+ * Modes:
+ *   - IDLE FLASH: Kırmızı yanıp söner (açık/kapalı, fade yok)
+ *   - FADE: İki renk arasında sinüssel fade döngüsü
+ * 
+ * Tüm slotlar (2 ve 3) aynı rengi alır.
+ * Her mod değişiminde eski timer temizlenir, hemen yeni başlar.
+ */
 class LightController {
     constructor(comms) {
         this.comms = comms;
-        this.currentRgb = ORANGE_RGB;
         this.interval = null;
-        this.start();
+        this.mode = null; // 'flash' | 'fade'
+        this.fadeColors = null;
+        this.fadePhase = 0;
+        this.flashState = false;
     }
-    setColor(rgb) { this.currentRgb = rgb; }
-    start() {
+
+    // Tüm slotlara renk gönder (slot 2 ve slot 3)
+    _sendColor(r, g, b) {
+        try {
+            this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
+            this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
+        } catch (e) {}
+    }
+
+    _stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+        this.mode = null;
+    }
+
+    // Kırmızı flash başlat (idle)
+    startIdleFlash() {
+        this._stop();
+        this.mode = 'flash';
+        this.flashState = false;
+        // Hemen ilk frame gönder
+        this._sendColor(...IDLE_FLASH_COLOR);
+        this.flashState = true;
+
         this.interval = setInterval(() => {
-            const [r, g, b] = this.currentRgb;
-            try {
-                this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
-                this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
-            } catch (e) {}
-        }, 2000);
+            if (this.flashState) {
+                this._sendColor(...OFF_COLOR);
+            } else {
+                this._sendColor(...IDLE_FLASH_COLOR);
+            }
+            this.flashState = !this.flashState;
+        }, 400); // 400ms açık, 400ms kapalı
+    }
+
+    // İki renk arası sinüssel fade başlat
+    startFade(colorA, colorB) {
+        this._stop();
+        this.mode = 'fade';
+        this.fadeColors = [colorA, colorB];
+        this.fadePhase = 0;
+
+        const FADE_STEP_MS = 50;    // her adım 50ms
+        const FADE_PERIOD = 80;     // tam döngü 80 adım = ~4 saniye
+
+        this.interval = setInterval(() => {
+            // 0..1 arası sinüs tabanlı t
+            const t = (Math.sin((this.fadePhase / FADE_PERIOD) * 2 * Math.PI) + 1) / 2;
+            const [a, b] = this.fadeColors;
+            const r = Math.round(a[0] + (b[0] - a[0]) * t);
+            const g = Math.round(a[1] + (b[1] - a[1]) * t);
+            const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+            this._sendColor(r, g, bl);
+            this.fadePhase = (this.fadePhase + 1) % FADE_PERIOD;
+        }, FADE_STEP_MS);
     }
 }
 
@@ -524,6 +612,8 @@ class PyroApp {
         try {
             await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
             this.lightCtrl = new LightController(this.comms);
+            // Başlangıçta idle flash
+            this.lightCtrl.startIdleFlash();
             this.setStatus("System is working ✓ — Waiting for figure");
         } catch (e) { this.setStatus("Connection Error!"); }
     }
@@ -535,23 +625,56 @@ class PyroApp {
         if (position !== 3) return;
 
         if (action === 0x00) {
+            // Figure taktı — önce flash durdur, sonra tara
             this.setStatus("Scanning...");
             const figId = await readFigureId(this.comms, order);
-            if (figId && COMPONENTS[figId]) {
-                if (this.lightCtrl) this.lightCtrl.setColor(COMPONENTS[figId].rgb);
-                this.showComponent(figId);
-                this.setStatus(`Figure Found: ${COMPONENTS[figId].name}`);
+            if (figId !== null) {
+                if (figId === GIF_FIGURE_ID) {
+                    // Kırmızı <-> Beyaz fade
+                    this.lightCtrl.startFade(GIF_LIGHT_COLORS[0], GIF_LIGHT_COLORS[1]);
+                    this.showGif();
+                    this.setStatus("Animasyon Oynatılıyor");
+                } else if (COMPONENTS[figId]) {
+                    const comp = COMPONENTS[figId];
+                    // Component fade
+                    this.lightCtrl.startFade(comp.lightColors[0], comp.lightColors[1]);
+                    this.showComponent(figId);
+                    this.setStatus(`Figure Found: ${comp.name}`);
+                } else {
+                    // Bilinmeyen figure — idle flash'a geri dön
+                    this.lightCtrl.startIdleFlash();
+                    this.showIdle();
+                    this.setStatus("Bilinmeyen Figür");
+                }
+            } else {
+                // Okunamadı — idle flash'a geri dön
+                this.lightCtrl.startIdleFlash();
+                this.showIdle();
+                this.setStatus("Figür okunamadı");
             }
         } else {
-            if (this.lightCtrl) this.lightCtrl.setColor(ORANGE_RGB);
+            // Figure çekildi — hemen idle flash'a geri dön
+            this.lightCtrl.startIdleFlash();
             this.showIdle();
             this.setStatus("Connection Active — Waiting for Figure");
         }
     }
 
     showIdle() {
+        document.getElementById('gif-view').style.display = 'none';
         document.getElementById('pres-view').style.display = 'none';
         document.getElementById('idle-view').style.display = 'block';
+    }
+
+    showGif() {
+        document.getElementById('idle-view').style.display = 'none';
+        document.getElementById('pres-view').style.display = 'none';
+        // GIF'i yeniden başlat
+        const gifImg = document.querySelector('#gif-view img');
+        const src = gifImg.src;
+        gifImg.src = '';
+        gifImg.src = src;
+        document.getElementById('gif-view').style.display = 'flex';
     }
 
     showComponent(figId) {
@@ -573,6 +696,7 @@ class PyroApp {
             specsContainer.appendChild(row);
         });
 
+        document.getElementById('gif-view').style.display = 'none';
         document.getElementById('idle-view').style.display = 'none';
         document.getElementById('pres-view').style.display = 'block';
     }
