@@ -7,6 +7,24 @@
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 		<link rel="icon" type="image/png" href="images/favicon3.png">
+		<script>
+  // Ekranın uyumasını engelle (Wake Lock API)
+  async function keepScreenAwake() {
+    try {
+      if ('wakeLock' in navigator) {
+        let wakeLock = await navigator.wakeLock.request('screen');
+        // Sekme tekrar aktif olunca yeniden iste
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible') {
+            wakeLock = await navigator.wakeLock.request('screen');
+          }
+        });
+      }
+    } catch (e) {}
+  }
+  keepScreenAwake();
+</script>
+		
 	</head>
 	<body class="is-preload">
 
