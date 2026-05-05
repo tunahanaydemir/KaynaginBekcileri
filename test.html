@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHX Prototype</title>
+    
+    <link rel="icon" type="image/png" href="images/favicon3.png">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+        :root {
+            --bg-overlay: rgba(10, 10, 15, 0.9); 
+            --panel-bg: rgba(20, 20, 30, 0.75); 
+            --glass-border: rgba(255, 107, 0, 0.3); 
+            --primary-orange: #FF6B00;
+            --accent-blue: #00BFFF;
+            --text-main: #f0f0f0;
+            --text-dim: #b0b0b0;
+            --error-red: #ff3333;
+            --glow: 0 0 15px rgba(255, 107, 0, 0.4);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: url('images/asa.gif') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        .bg-dimmer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-overlay);
+            z-index: -1;
+        }
+
+        .corner-img {
+            position: absolute;
+            top: 20px;
+            width: 120px;
+            height: auto;
+            z-index: 10;
+            filter: drop-shadow(0 0 8px var(--primary-orange));
+        }
+        .top-left { left: 30px; }
+        .top-right { right: 30px; }
+
+        /* --- Screens --- */
+        .screen-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        h1, h2 { font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+        h1 { color: var(--primary-orange); font-size: 24px; margin-bottom: 5px; text-shadow: var(--glow); }
+        .subtitle { color: var(--accent-blue); font-size: 12px; margin-bottom: 25px; font-weight: 500; }
+
+        /* --- UI Elements --- */
+        .input-group { margin-bottom: 20px; }
+        input[type="password"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary-orange);
+            border-radius: 5px;
+            color: var(--primary-orange);
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        input[type="password"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
+
+        .btn-action {
+            background: linear-gradient(45deg, var(--primary-orange), #e65c00);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+        }
+        .btn-action:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); }
+
+        #login-error { color: var(--error-red); font-size: 13px; margin-top: 15px; height: 18px; font-weight: bold; }
+
+        /* --- Main App UI --- */
+        #main-app {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .app-header { text-align: center; margin-bottom: 30px; }
+        .app-header h1 { font-size: 42px; margin: 0; }
+        .app-header .line { height: 2px; background: linear-gradient(90deg, transparent, var(--primary-orange), var(--accent-blue), transparent); margin: 15px 0; }
+
+        .dashboard {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #idle-view { text-align: center; animation: pulse 3s infinite; }
+        .hex-icon { font-size: 120px; color: var(--primary-orange); opacity: 0.4; margin-bottom: 20px; }
+        .idle-text { font-size: 22px; color: var(--text-dim); }
+
+        #pres-view {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(15, 15, 20, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* --- GIF Full View --- */
+        #gif-view {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #gif-view img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .comp-header { display: flex; align-items: center; gap: 30px; margin-bottom: 25px; }
+        .comp-icon { font-size: 80px; }
+        .comp-titles { flex: 1; }
+        .comp-titles h2 { font-size: 48px; margin: 0; color: #fff; }
+        .comp-titles p { font-size: 18px; color: var(--accent-blue); margin-top: 5px; }
+
+        .comp-body { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .spec-list { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 10px; }
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 107, 0, 0.1);
+            font-size: 14px;
+        }
+        .spec-label { color: var(--text-dim); font-weight: bold; }
+        .spec-value { color: #fff; }
+
+        .detail-box { line-height: 1.6; font-size: 15px; }
+        .sdg-tag {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            font-style: italic;
+            color: var(--primary-orange);
+        }
+
+        #status-bar {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--accent-blue);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            z-index: 600;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-dimmer"></div>
+    
+    <img src="images/gencbizzlogo.png" class="corner-img top-left" alt="GencBizz">
+    <img src="images/gsbllogo.png" class="corner-img top-right" alt="GSBL">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen-container">
+        <div class="glass-panel">
+            <h1>Admın Access</h1>
+            <p class="subtitle">PHX Pyro Fuel</p>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="Password" autofocus>
+            </div>
+            <button class="btn-action" onclick="checkLogin()">Logın</button>
+            <div id="login-error"></div>
+        </div>
+    </div>
+
+    <!-- HID Permission Prompt -->
+    <div id="hid-overlay" class="screen-container" style="display:none;">
+        <div class="glass-panel" style="border-color: var(--error-red);">
+            <h1 style="color: var(--error-red);">Connect hardware to begin</h1>
+            <button class="btn-action" onclick="initHID()">Connect</button>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app">
+        <div class="app-header">
+            <h1>PHX PYRO FUEL</h1>
+            <div class="line"></div>
+            <p class="subtitle">Make Waste Fuel Again!</p>
+        </div>
+
+        <div class="dashboard">
+            <div id="idle-view">
+                <div class="hex-icon">⬢</div>
+                <div class="idle-text">Figürü base'e yerleştirin</div>
+            </div>
+
+            <div id="pres-view">
+                <div class="comp-header">
+                    <div id="p-icon" class="comp-icon"></div>
+                    <div class="comp-titles">
+                        <h2 id="p-name"></h2>
+                        <p id="p-subtitle"></p>
+                    </div>
+                </div>
+                
+                <div class="comp-body">
+                    <div class="spec-list">
+                        <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">TEKNİK VERİLER</h3>
+                        <div id="p-specs"></div>
+                    </div>
+                    <div class="detail-box">
+                        <h3 style="margin-top:0; font-size:14px; color:var(--primary-orange)">DETAY</h3>
+                        <div id="p-detail"></div>
+                        <p id="p-desc" style="margin-top:15px; opacity:0.8; font-size:13px;"></p>
+                    </div>
+                </div>
+
+                <div id="p-sdg" class="sdg-tag"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GIF Full Screen View -->
+    <div id="gif-view">
+        <img src="images/animasyon.gif" alt="Animasyon" loop>
+    </div>
+
+    <div id="status-bar">WAITING FOR SYSTEM CONNECTION...</div>
+
+<script>
+/**
+ * CONSTANTS & DATA
+ */
+const SHA1_CONSTANT = [
+    0xAF, 0x62, 0xD2, 0xEC, 0x04, 0x91, 0x96, 0x8C, 0xC5, 0x2A, 0x1A, 0x71, 0x65, 0xF8, 0x65, 0xFE,
+    0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33
+];
+
+const ADMIN_PASSWORD = "xlyn";
+const ORANGE_RGB = [255, 107, 0]; 
+
+// Special figure ID that triggers GIF view
+const GIF_FIGURE_ID = 0x9722B7;
+
+const COMPONENTS = {
+    0xc52257: {
+        "name": "Kondenser",
+        "subtitle": "Gaz Soğutma ve Sıvılaştırma Ünitesi",
+        "color": "#00BFFF",
+        "rgb": [0, 191, 255],
+        "icon": "❄",
+        "desc": "Reaktörden yükselen sıcak hidrokarbon gazlarının sıvı enerjiye dönüştüğü Kondenser ünitesi, gemi üzerindeki kısıtlı alanlar ve soğutma ihtiyaçları düşünülerek deniz suyu soğutmalı kabuk-boru (shell-tube) tipi bir eşanjör yapısıyla tasarlanmıştır. Reaktörden gelen yüksek sıcaklıktaki gazları ani bir şokla soğutarak yoğunlaştıran bu birim, %85-92 arasındaki olağanüstü yüksek verimlilik oranıyla çalışarak gaz fazındaki karışımın büyük bir bölümünü denizcilik standartlarına uygun, yüksek değerli düşük kükürtlü sıvı yakıta (LSFO) dönüştürür. Kondenserin bu performansı, atığın ne kadarının geri kazanılabileceğini belirleyen en temel faktörlerden biridir ve üretilen yakıtın kalitesini doğrudan belirler.",
+        "specs": [
+            ["Tip", "Kabuk-boru eşanjör"],
+            ["Soğutma", "Deniz suyu devresi"],
+            ["Kapasite", "50 kW"],
+            ["Sıcaklık", "≤40°C Çıkış"],
+            ["Verim", "%85–92"],
+            ["Malzeme", "316L Paslanmaz"],
+        ],
+        "sdg": "BM SKA 12: Sorumlu Üretim ve Tüketim",
+        "detail": "Sıcak Hidrokarbon Gazlarını Deniz Suyuyla Yoğuşturup Sıvı Yakıta Dönüştüren Ünite"
+    },
+    0x7a376a: {
+        "name": "Besleme Ünitesi",
+        "subtitle": "Vidalı Konveyör",
+        "color": "#FFD700",
+        "rgb": [255, 215, 0],
+        "icon": "⚙",
+        "desc": "Besleme Ünitesi, okyanuslardan toplanan plastik atıkların sisteme giriş yaptığı ilk ve en kritik mekanik aşamadır. Operasyonel sürekliliği ve sistemin tıkanmadan çalışmasını sağlamak amacıyla, 400 kg/gün gibi yüksek bir kapasiteye sahip olan dayanıklı bir vidalı konveyör (helezon) mekanizmasıyla donatılmıştır. Bu ünite, atıkların piroliz reaktörüne herhangi bir manuel müdahale gerektirmeden, önceden belirlenmiş düzenli ve kontrollü bir hızda aktarılmasını sağlayarak sistemin tam otonom çalışma kabiliyetini doğrudan destekler. Hammaddenin fiziksel formundan veya yoğunluğundan bağımsız olarak reaktöre kesintisiz bir besleme akışı sunan bu mekanik yapı, içerideki termal işlemin kararlılığını koruyarak sistemin genel verimliliğini en üst seviyeye çıkarır.",
+        "specs": [
+            ["Kapasite", "400 kg/gün"],
+            ["Vida Çapı", "80 mm"],
+            ["Motor", "1,5 kW"],
+            ["Sistem", "Kapalı, sızdırmaz"],
+            ["Kontrol", "PLC Otomatik"],
+            ["Malzeme", "S235 Çelik"],
+        ],
+        "sdg": "BM SKA 14: Sudaki Yaşam",
+        "detail": "Okyanus Plastiğini Kesintisiz Güçle Reaktöre Taşıyan Giriş Hattı"
+    },
+    0x9981f8: {
+        "name": "Piroliz Reaktörü",
+        "subtitle": "Sistemin Kalbi — Isıl Ayrışma",
+        "color": "#FF4500",
+        "rgb": [255, 69, 0],
+        "icon": "🔥",
+        "desc": "Sistemin kalbi ve ana işlem merkezi olarak işlev gören Piroliz Reaktörü, Ø1.2m x H1.8m boyutlarında olup, denizcilik koşullarındaki yüksek korozyona ve ekstrem sıcaklıklara dayanabilmesi için 316L kalite paslanmaz çelikten imal edilmiş devasa bir fırın yapısına sahiptir. Bu ünite içerisinde plastik atıklar, oksijenden tamamen arındırılmış bir atmosferde 350-500°C arasındaki çok yüksek sıcaklıklara maruz bırakılarak kimyasal bir ısıl ayrışma sürecine sokulur. İşlemin hızı ve elde edilecek son ürünün kalitesini optimize etmek amacıyla reaktör içerisinde özel bir ZSM-5 zeolit katalizörü kullanılır; bu katalizör sayesinde polimer zincirleri çok daha etkin bir şekilde kırılarak plastikler verimli bir şekilde gaz fazına geçirilir.",
+        "specs": [
+            ["Çalışma Isısı", "350–500°C"],
+            ["Kapasite", "400 kg plastik/gün"],
+            ["Katalizör", "ZSM-5 Zeolit"],
+            ["Malzeme", "316L Paslanmaz"],
+            ["Isıtma", "Hibrit (Elektrik/Gaz)"],
+            ["Güvenlik", "Emniyet Ventili"],
+        ],
+        "sdg": "BM SKA 13: İklim Eylemi",
+        "detail": "Atığı Yüksek Isı ve Katalizörle Gaz Fazına Ayrıştıran Sistemin Kalbi"
+    },
+    0xebe124: {
+        "name": "NCG Geri Besleme",
+        "subtitle": "Gaz Geri Kazanım Sistemi",
+        "color": "#00CC00",
+        "rgb": [0, 204, 0],
+        "icon": "♻",
+        "desc": "Piroliz sürecinin bir parçası olarak ortaya çıkan ancak yoğunlaştırılamayan yanıcı gazların yönetimi, NCG Geri Besleme ünitesi tarafından son derece stratejik bir şekilde gerçekleştirilerek bu gazların çevreye salınmak yerine sistem içinde değerlendirilmesi sağlanır. Kondenser aşamasında sıvı faza geçemeyen bu yoğuşmayan gazlar (Non-Condensable Gas), enerji tasarrufu ve çevresel emisyon kontrolü sağlamak üzere özel bir hat üzerinden reaktörün yanma odasına geri yönlendirilir. Bu kapalı döngü geri besleme mekanizması sayesinde sistem, reaktörü ısıtmak için gereken devasa enerjinin bir kısmını kendi ürettiği bu gazdan karşılayarak hem operasyonel maliyetleri ciddi oranda düşürür hem de geminin dış enerji kaynaklarına olan bağımlılığını minimize eder.",
+        "specs": [
+            ["Gaz Debisi", "~170 g/kg plastik"],
+            ["Boru Çapı", "25 mm"],
+            ["Vana", "Solenoid Otomatik"],
+            ["Enerji Tasarrufu", "~%30 Kazanım"],
+            ["İşlev", "Reaktör Yakıtı"],
+            ["Güvenlik", "Sensör Entegreli"],
+        ],
+        "sdg": "BM SKA 7: Temiz Enerji",
+        "detail": "Sıvılaşmayan Gazları Isı Enerjisine Çevirerek Sisteme Verimlilik Katan Geri Dönüşüm Döngüsü"
+    },
+    0x1ac5a4: {
+        "name": "Depolama Tankı",
+        "subtitle": "Yakıt Depolama Ünitesi",
+        "color": "#FF6B00",
+        "rgb": [255, 107, 0],
+        "icon": "🛢",
+        "desc": "Sürecin nihai durağı ve elde edilen değerin muhafaza edildiği yer olan Yakıt Depolama ünitesi, üretilen enerjinin gemi operasyonlarında kullanılmak üzere 500 litre kapasiteli, güvenlik standartları yüksek özel bir tankta toplandığı son halkadır. Sistemden çıkan ve depolanan bu yakıt, IMO 2020 küresel denizcilik regülasyonlarına tam uyumlu olacak şekilde ≤%0.5 kükürt oranına sahiptir ve herhangi bir ek işleme gerek kalmadan doğrudan geminin ana makine veya jeneratör sistemlerine aktarılabilir. PLC kontrol sistemi, emniyet ventilleri ve patlama diskleri gibi üst düzey güvenlik donanımlarıyla korunan bu depolama birimi, okyanuslardan toplanan plastik kirliliğinin artık stratejik ve ekonomik bir yakıt olarak geminin enerji devresine tam entegre edildiği noktadır.",
+        "specs": [
+            ["Hacim", "500 Litre"],
+            ["Kükürt Oranı", "≤%0,5 (IMO 2020)"],
+            ["Ürün Tipi", "LSFO Yakıt Yağı"],
+            ["Malzeme", "HDPE / Paslanmaz"],
+            ["Ölçüm", "Dijital Debi"],
+            ["Kullanım", "Gemi / Satış"],
+        ],
+        "sdg": "BM SKA 12: Sorumlu Üretim",
+        "detail": "Üretilen Düşük Kükürtlü Enerjiyi Gemi Motoru İçin Hazır Tutan Güvenli Tank Sistemi"
+    }
+    // 0x9722B7 is handled separately as a full-screen GIF view — no entry here
+};
+
+class InfinityComms {
+    constructor(device) {
+        this.device = device;
+        this.messageNumber = 0;
+        this.pendingRequests = new Map();
+        
+        this.device.oninputreport = (event) => {
+            const data = new Uint8Array(event.data.buffer);
+            const msgId = data[2];
+            if (this.pendingRequests.has(msgId)) {
+                this.pendingRequests.get(msgId)(data);
+                this.pendingRequests.delete(msgId);
+            }
+            if (data[0] === 0xab && window.app) {
+                window.app.handleBaseEvent(data);
+            }
+        };
+    }
+
+    nextId() {
+        this.messageNumber = (this.messageNumber + 1) % 256;
+        return this.messageNumber;
+    }
+
+    async sendRecv(command, data = [], timeout = 1000) {
+        const msgId = this.nextId();
+        const body = [command, msgId, ...data];
+        const packet = new Uint8Array(32);
+        packet[0] = 0xff; packet[1] = body.length;
+        for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
+        
+        let checksum = 0;
+        for (let i = 0; i < body.length + 2; i++) checksum = (checksum + packet[i]) & 0xff;
+        packet[body.length + 2] = checksum;
+
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingRequests.delete(msgId);
+                resolve(null);
+            }, timeout);
+
+            this.pendingRequests.set(msgId, (response) => {
+                clearTimeout(timer);
+                resolve(Array.from(response));
+            });
+
+            this.device.sendReport(0x00, packet);
+        });
+    }
+
+    sendOnly(command, data = []) {
+        const msgId = this.nextId();
+        const body = [command, msgId, ...data];
+        const packet = new Uint8Array(32);
+        packet[0] = 0xff; packet[1] = body.length;
+        for (let i = 0; i < body.length; i++) packet[i + 2] = body[i];
+        
+        let checksum = 0;
+        for (let i = 0; i < body.length + 2; i++) checksum = (checksum + packet[i]) & 0xff;
+        packet[body.length + 2] = checksum;
+
+        this.device.sendReport(0x00, packet);
+    }
+}
+
+function deriveKey(uid) {
+    const sha1Calc = new Uint8Array(38);
+    sha1Calc.set(SHA1_CONSTANT.slice(0, 31), 0);
+    sha1Calc.set(uid.slice(0, 7), 31);
+    const words = CryptoJS.lib.WordArray.create(sha1Calc);
+    const sha1OutWords = CryptoJS.SHA1(words);
+    const sha1Out = wordToByteArray(sha1OutWords);
+    const key = new Uint8Array(16);
+    for (let i = 0; i < 4; i++) {
+        for (let x = 0; x < 4; x++) {
+            key[x + (i * 4)] = sha1Out[(3 - x) + (i * 4)];
+        }
+    }
+    return key;
+}
+
+function wordToByteArray(wordArray) {
+    const bytes = [];
+    for (let i = 0; i < wordArray.sigBytes; i++) {
+        bytes.push((wordArray.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
+    }
+    return bytes;
+}
+
+async function readFigureId(comms, order) {
+    try {
+        const resp = await comms.sendRecv(0xB4, [order]);
+        if (!resp) return null;
+        const uid = resp.slice(4, 11);
+        const key = deriveKey(uid);
+        const resp2 = await comms.sendRecv(0xA2, [order, 0x00, 0x01]);
+        if (!resp2) return null;
+        const blockData = resp2.slice(4, 20);
+        const keyWA = CryptoJS.lib.WordArray.create(key);
+        const cipherTextWA = CryptoJS.lib.WordArray.create(new Uint8Array(blockData));
+        const decrypted = CryptoJS.AES.decrypt({ ciphertext: cipherTextWA }, keyWA, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
+        const dec = wordToByteArray(decrypted);
+        return (dec[1] << 16) | (dec[2] << 8) | dec[3];
+    } catch (e) { return null; }
+}
+
+class LightController {
+    constructor(comms) {
+        this.comms = comms;
+        this.currentRgb = ORANGE_RGB;
+        this.interval = null;
+        this.start();
+    }
+    setColor(rgb) { this.currentRgb = rgb; }
+    start() {
+        this.interval = setInterval(() => {
+            const [r, g, b] = this.currentRgb;
+            try {
+                this.comms.sendOnly(0x92, [2, 0x17, 0x02, r, g, b]);
+                this.comms.sendOnly(0x92, [3, 0x17, 0x02, r, g, b]);
+            } catch (e) {}
+        }, 2000);
+    }
+}
+
+class PyroApp {
+    constructor(device) {
+        this.comms = new InfinityComms(device);
+        this.lightCtrl = null;
+        this.initBase();
+    }
+
+    async initBase() {
+        try {
+            await this.comms.sendRecv(0x80, [0x28, 0x63, 0x29, 0x20, 0x44, 0x69, 0x73, 0x6e, 0x65, 0x79, 0x20, 0x32, 0x30, 0x31, 0x33]);
+            this.lightCtrl = new LightController(this.comms);
+            this.setStatus("System is working ✓ — Waiting for figure");
+        } catch (e) { this.setStatus("Connection Error!"); }
+    }
+
+    async handleBaseEvent(fields) {
+        const position = fields[2];
+        const order = fields[4];
+        const action = fields[5];
+        if (position !== 3) return;
+
+        if (action === 0x00) {
+            this.setStatus("Scanning...");
+            const figId = await readFigureId(this.comms, order);
+            if (figId !== null) {
+                // Special GIF figure
+                if (figId === GIF_FIGURE_ID) {
+                    if (this.lightCtrl) this.lightCtrl.setColor(ORANGE_RGB);
+                    this.showGif();
+                    this.setStatus("Animasyon Oynatılıyor");
+                } else if (COMPONENTS[figId]) {
+                    if (this.lightCtrl) this.lightCtrl.setColor(COMPONENTS[figId].rgb);
+                    this.showComponent(figId);
+                    this.setStatus(`Figure Found: ${COMPONENTS[figId].name}`);
+                }
+            }
+        } else {
+            if (this.lightCtrl) this.lightCtrl.setColor(ORANGE_RGB);
+            this.showIdle();
+            this.setStatus("Connection Active — Waiting for Figure");
+        }
+    }
+
+    showIdle() {
+        document.getElementById('gif-view').style.display = 'none';
+        document.getElementById('pres-view').style.display = 'none';
+        document.getElementById('idle-view').style.display = 'block';
+    }
+
+    showGif() {
+        document.getElementById('idle-view').style.display = 'none';
+        document.getElementById('pres-view').style.display = 'none';
+        // Reload the gif to restart loop from beginning
+        const gifImg = document.querySelector('#gif-view img');
+        const src = gifImg.src;
+        gifImg.src = '';
+        gifImg.src = src;
+        document.getElementById('gif-view').style.display = 'flex';
+    }
+
+    showComponent(figId) {
+        const comp = COMPONENTS[figId];
+        document.getElementById('p-icon').innerText = comp.icon;
+        document.getElementById('p-icon').style.color = comp.color;
+        document.getElementById('p-name').innerText = comp.name;
+        document.getElementById('p-subtitle').innerText = comp.subtitle;
+        document.getElementById('p-desc').innerText = comp.desc;
+        document.getElementById('p-sdg').innerText = "🌍 " + comp.sdg;
+        document.getElementById('p-detail').innerText = comp.detail;
+
+        const specsContainer = document.getElementById('p-specs');
+        specsContainer.innerHTML = "";
+        comp.specs.forEach(([key, val]) => {
+            const row = document.createElement('div');
+            row.className = 'spec-item';
+            row.innerHTML = `<span class="spec-label">${key}</span><span class="spec-value">${val}</span>`;
+            specsContainer.appendChild(row);
+        });
+
+        document.getElementById('gif-view').style.display = 'none';
+        document.getElementById('idle-view').style.display = 'none';
+        document.getElementById('pres-view').style.display = 'block';
+    }
+
+    setStatus(msg) { document.getElementById('status-bar').innerText = msg; }
+}
+
+function checkLogin() {
+    const input = document.getElementById('password-input').value;
+    if (input === ADMIN_PASSWORD) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('hid-overlay').style.display = 'flex';
+    } else {
+        document.getElementById('login-error').innerText = "⚠ Access Denied";
+        document.getElementById('password-input').value = "";
+    }
+}
+
+async function initHID() {
+    try {
+        const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0e6f, productId: 0x0129 }] });
+        if (devices.length > 0) {
+            const device = devices[0];
+            await device.open();
+            document.getElementById('hid-overlay').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            window.app = new PyroApp(device);
+        }
+    } catch (e) { alert("Connection Error: " + e.message); }
+}
+
+document.getElementById('password-input').addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter') checkLogin(); 
+});
+</script>
+</body>
+</html>
