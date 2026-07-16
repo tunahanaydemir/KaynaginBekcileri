@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Present Quest: QR Adventure</title>
+<meta name="description" content="5. sınıflar için Simple Present Tense QR macera oyunu">
+<meta name="theme-color" content="#1B4332">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --forest:#1B4332;
+  --leaf:#40916C;
+  --leaf-dark:#2D6A4F;
+  --sun:#FFC93C;
+  --coral:#FF6B6B;
+  --sky:#4EA8DE;
+  --cream:#FFF8ED;
+  --ink:#1D2A32;
+  --gem:#9D6BFF;
+  --bronze:#C08552;
+  --silver:#A9B4C2;
+  --gold:#F2B705;
+  --radius:22px;
+  --shadow: 0 10px 24px rgba(27,67,50,.18);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0; font-family:"Nunito",sans-serif; color:var(--ink);
+  background:
+    radial-gradient(1200px 800px at 20% -10%, #2D6A4F 0%, #1B4332 55%, #123024 100%) fixed;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:18px;
+}
+h1,h2,h3,.display{font-family:"Baloo 2",sans-serif; font-weight:700; letter-spacing:.2px;}
+button{font-family:inherit;}
+#phone{
+  width:100%; max-width:430px; min-height:min(860px,94vh); height:min(860px,94vh);
+  background:var(--cream);
+  border-radius:36px;
+  box-shadow: var(--shadow), 0 0 0 8px #0f2118;
+  overflow:hidden; position:relative; display:flex; flex-direction:column;
+}
+#topbar{
+  display:flex; align-items:center; gap:10px; padding:14px 16px 10px;
+  background:var(--forest); color:var(--cream); flex-shrink:0;
+}
+#topbar .tb-back{
+  background:rgba(255,255,255,.12); border:none; color:var(--cream); width:36px; height:36px;
+  border-radius:12px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+#topbar .tb-title{font-family:"Baloo 2",sans-serif; font-size:17px; flex:1; font-weight:700;}
+#topbar .tb-points{
+  background:rgba(255,201,60,.18); color:var(--sun); font-weight:800; font-size:13px;
+  padding:6px 10px; border-radius:999px; display:flex; align-items:center; gap:5px; white-space:nowrap;
+}
+#appbar-progress{height:6px; background:rgba(255,255,255,.15); flex-shrink:0;}
+#appbar-progress > div{height:100%; background:var(--sun); width:0%; transition:width .5s ease; border-radius:0 4px 4px 0;}
+
+.screen{display:none; flex-direction:column; flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.screen.active{display:flex;}
+.screen-pad{padding:18px 18px 28px;}
+
+/* Buttons */
+.btn{
+  border:none; border-radius:16px; padding:15px 18px; font-family:"Baloo 2",sans-serif; font-weight:700;
+  font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:transform .12s ease, box-shadow .12s ease; box-shadow:0 5px 0 rgba(0,0,0,.15);
+}
+.btn:active{transform:translateY(3px); box-shadow:0 2px 0 rgba(0,0,0,.15);}
+.btn-primary{background:var(--leaf); color:#fff;}
+.btn-sun{background:var(--sun); color:var(--forest);}
+.btn-coral{background:var(--coral); color:#fff;}
+.btn-sky{background:var(--sky); color:#fff;}
+.btn-ghost{background:#fff; color:var(--forest); border:2px solid #e3ddcc; box-shadow:none;}
+.btn-block{width:100%;}
+.btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+.btn-sm{padding:9px 14px; font-size:13px; border-radius:12px; box-shadow:0 3px 0 rgba(0,0,0,.15);}
+
+/* HOME */
+#screen-home .home-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:28px 22px 20px; text-align:center;}
+.robot{width:132px; height:132px; animation:bob 3.2s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+.eyebrow{font-family:"Baloo 2",sans-serif; font-weight:700; color:var(--sun); letter-spacing:2px; font-size:12px; text-transform:uppercase;}
+.home-title{font-size:30px; color:var(--forest); margin:6px 0 2px;}
+.home-sub{color:#5b6b63; font-size:14.5px; margin:0 0 18px; max-width:280px;}
+.speech-bubble{
+  background:#fff; border-radius:18px; padding:12px 16px; font-size:13.5px; color:var(--ink);
+  box-shadow:var(--shadow); position:relative; max-width:270px; margin-bottom:10px; font-weight:700;
+}
+.home-btns{width:100%; display:flex; flex-direction:column; gap:11px; max-width:320px;}
+.home-progress-wrap{width:100%; max-width:320px; margin-top:16px;}
+.home-progress-label{display:flex; justify-content:space-between; font-size:12px; font-weight:800; color:#557; margin-bottom:5px; color:var(--forest);}
+.progress-track{height:12px; background:#e9e2cf; border-radius:999px; overflow:hidden;}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--leaf),var(--sun)); border-radius:999px; transition:width .6s ease;}
+
+/* MAP */
+.map-svg-wrap{padding:6px 10px 0;}
+.node-label{font-family:"Baloo 2",sans-serif; font-weight:700; fill:var(--forest); font-size:11px;}
+.node-circle{cursor:pointer;}
+.node-circle.locked{fill:#cfc9b6;}
+.node-circle.current{fill:var(--sun); filter:drop-shadow(0 0 8px rgba(255,201,60,.9));}
+.node-circle.done-bronze{fill:var(--bronze);}
+.node-circle.done-silver{fill:var(--silver);}
+.node-circle.done-gold{fill:var(--gold);}
+.node-pulse{animation:pulseNode 1.6s ease-in-out infinite;}
+@keyframes pulseNode{0%,100%{r:30;}50%{r:34;}}
+.path-line{fill:none; stroke:#fff; stroke-width:6; stroke-linecap:round; stroke-dasharray:2 14; opacity:.85; animation:dashMove 2.4s linear infinite;}
+@keyframes dashMove{to{stroke-dashoffset:-32;}}
+.map-legend{display:flex; gap:14px; justify-content:center; padding:6px 0 4px; font-size:11.5px; font-weight:700; color:var(--forest); flex-wrap:wrap;}
+.map-legend span{display:flex; align-items:center; gap:5px;}
+.legend-dot{width:12px; height:12px; border-radius:50%; display:inline-block;}
+
+/* CARD generic */
+.card{background:#fff; border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:14px;}
+
+/* Quiz */
+.quiz-dots{display:flex; gap:6px; justify-content:center; padding:14px 0 4px;}
+.qdot{width:9px; height:9px; border-radius:50%; background:#e3ddcc;}
+.qdot.done{background:var(--leaf);}
+.qdot.active{background:var(--sun); transform:scale(1.3);}
+.q-card{background:#fff; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);}
+.q-text{font-family:"Baloo 2",sans-serif; font-size:19px; font-weight:700; color:var(--forest); margin:0 0 16px; line-height:1.35;}
+.q-options{display:flex; flex-direction:column; gap:10px;}
+.opt-btn{
+  background:var(--cream); border:2px solid #ecdfc6; border-radius:14px; padding:13px 14px; text-align:left;
+  font-family:"Baloo 2",sans-serif; font-weight:600; font-size:15.5px; cursor:pointer; color:var(--ink);
+}
+.opt-btn.correct{background:#e3f6e9; border-color:var(--leaf); color:var(--leaf-dark);}
+.opt-btn.wrong{background:#fde8e8; border-color:var(--coral); color:#b23a3a;}
+.opt-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.img-opt{background:var(--cream); border:2px solid #ecdfc6; border-radius:16px; padding:14px 6px; text-align:center; cursor:pointer; font-family:"Baloo 2",sans-serif; font-weight:700;}
+.img-opt .em{font-size:34px; display:block; margin-bottom:4px;}
+.word-tokens{display:flex; flex-wrap:wrap; gap:8px; font-family:"Baloo 2",sans-serif; font-size:17px; font-weight:700;}
+.tok-btn{background:var(--cream); border:2px solid #ecdfc6; border-radius:10px; padding:8px 12px; cursor:pointer;}
+.order-bank{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; min-height:44px;}
+.order-line{display:flex; flex-wrap:wrap; gap:8px; min-height:48px; background:var(--cream); border-radius:12px; border:2px dashed #d8cfb2; padding:8px; margin-bottom:14px;}
+.chip{background:var(--sky); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-family:"Baloo 2",sans-serif; font-weight:700; cursor:pointer;}
+.match-cols{display:flex; gap:14px;}
+.match-col{flex:1; display:flex; flex-direction:column; gap:8px;}
+.match-item{background:var(--cream); border:2px solid #ecdfc6; border-radius:12px; padding:10px; text-align:center; font-weight:700; cursor:pointer; font-family:"Baloo 2",sans-serif;}
+.match-item.sel{border-color:var(--sky); background:#eaf4fb;}
+.match-item.matched{background:#e3f6e9; border-color:var(--leaf); opacity:.7; cursor:default;}
+.listen-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.listen-btn{background:var(--sky); color:#fff; border:none; width:52px; height:52px; border-radius:50%; font-size:22px; cursor:pointer; flex-shrink:0;}
+.feedback-banner{margin-top:14px; padding:12px 14px; border-radius:14px; font-weight:800; font-family:"Baloo 2",sans-serif; text-align:center; display:none;}
+.feedback-banner.show{display:block;}
+.feedback-banner.ok{background:#e3f6e9; color:var(--leaf-dark);}
+.feedback-banner.no{background:#fde8e8; color:#b23a3a;}
+.shake{animation:shakeAnim .4s;}
+@keyframes shakeAnim{10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(4px);}30%,50%,70%{transform:translateX(-8px);}40%,60%{transform:translateX(8px);}}
+
+/* Badges */
+.badge-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+.badge-item{background:#fff; border-radius:18px; padding:14px 8px; text-align:center; box-shadow:var(--shadow);}
+.medal{width:56px; height:56px; border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:26px; color:#fff;}
+.medal.locked{background:#e3ddcc; color:#a9a08a;}
+.medal.bronze{background:linear-gradient(145deg,#d69a6d,var(--bronze));}
+.medal.silver{background:linear-gradient(145deg,#d3dbe4,var(--silver));}
+.medal.gold{background:linear-gradient(145deg,#ffd76a,var(--gold));}
+.badge-item .bname{font-family:"Baloo 2",sans-serif; font-weight:700; font-size:12.5px; color:var(--forest);}
+
+/* Teacher */
+.qr-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.qr-card{background:#fff; border-radius:16px; padding:12px; text-align:center; box-shadow:var(--shadow);}
+.qr-card canvas,.qr-card img{margin:0 auto;}
+.qr-label{font-family:"Baloo 2",sans-serif; font-weight:700; font-size:12.5px; margin-top:6px; color:var(--forest);}
+textarea.jsoneditor{width:100%; min-height:180px; font-family:monospace; font-size:12px; border-radius:12px; border:2px solid #e3ddcc; padding:10px;}
+.tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+.tab-btn{background:#fff; border:2px solid #e3ddcc; border-radius:12px; padding:8px 13px; font-weight:700; font-family:"Baloo 2",sans-serif; font-size:13px; cursor:pointer; color:var(--forest);}
+.tab-btn.active{background:var(--forest); color:#fff; border-color:var(--forest);}
+.tabpane{display:none;}
+.tabpane.active{display:block;}
+
+/* scanner */
+.scan-box{background:#0f2118; border-radius:20px; overflow:hidden; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:16px;}
+#reader,#reader-mini{width:100%;}
+.scan-frame{position:absolute; inset:16%; border:3px solid var(--sun); border-radius:16px; pointer-events:none;}
+
+/* toast */
+#toast{
+  position:absolute; left:50%; bottom:24px; transform:translate(-50%,20px); background:var(--forest); color:#fff;
+  padding:12px 18px; border-radius:14px; font-weight:700; font-family:"Baloo 2",sans-serif; font-size:13.5px;
+  box-shadow:0 8px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:all .3s ease; z-index:50; max-width:85%; text-align:center;
+}
+#toast.show{opacity:1; transform:translate(-50%,0);}
+
+#confetti-canvas{position:absolute; inset:0; pointer-events:none; z-index:40;}
+
+.chest{font-size:70px; text-align:center; animation:chestPop .6s ease;}
+@keyframes chestPop{0%{transform:scale(.4) rotate(-10deg);}60%{transform:scale(1.15) rotate(5deg);}100%{transform:scale(1) rotate(0);}}
+
+.install-fab{position:absolute; right:14px; bottom:14px; background:var(--sun); color:var(--forest); border:none; border-radius:999px; padding:11px 15px; font-family:"Baloo 2",sans-serif; font-weight:800; font-size:12.5px; box-shadow:var(--shadow); display:none; align-items:center; gap:6px; z-index:30;}
+
+.field{width:100%; padding:13px 14px; border-radius:14px; border:2px solid #e3ddcc; font-family:"Nunito"; font-size:15px; margin-bottom:12px;}
+
+.modal-overlay{position:absolute; inset:0; background:rgba(20,30,25,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:24px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff; border-radius:20px; padding:22px; width:100%; max-width:320px; box-shadow:var(--shadow);}
+
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{position:absolute; left:0; top:0; width:100%;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001s !important; animation-iteration-count:1 !important;}
+}
+</style>
+</head>
+<body>
+<div id="phone">
+
+  <div id="topbar">
+    <button class="tb-back" id="tb-back" aria-label="Geri" style="visibility:hidden;">←</button>
+    <div class="tb-title" id="tb-title">Present Quest</div>
+    <div class="tb-points" id="tb-points">⭐ 0</div>
+  </div>
+  <div id="appbar-progress"><div id="appbar-progress-fill"></div></div>
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen active">
+    <div class="home-wrap">
+      <div>
+        <div class="eyebrow">QR ADVENTURE</div>
+        <h1 class="home-title">Present Quest</h1>
+        <p class="home-sub">Simple Present Tense'i keşfet, QR kodları bul, rozetleri topla!</p>
+      </div>
+      <div>
+        <svg class="robot" viewBox="0 0 200 200"><g></g>
+          <rect x="94" y="18" width="12" height="26" rx="6" fill="#FFC93C"/>
+          <circle cx="100" cy="16" r="10" fill="#FFC93C"/>
+          <rect x="34" y="46" width="132" height="104" rx="26" fill="#40916C"/>
+          <rect x="54" y="64" width="92" height="70" rx="18" fill="#FFF8ED"/>
+          <circle cx="82" cy="98" r="9" fill="#1D2A32"/>
+          <circle cx="118" cy="98" r="9" fill="#1D2A32"/>
+          <path d="M78 114 Q100 132 122 114" stroke="#FF6B6B" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <rect x="18" y="70" width="16" height="46" rx="8" fill="#2D6A4F"/>
+          <rect x="166" y="70" width="16" height="46" rx="8" fill="#2D6A4F"/>
+          <rect x="60" y="156" width="26" height="20" rx="8" fill="#2D6A4F"/>
+          <rect x="114" y="156" width="26" height="20" rx="8" fill="#2D6A4F"/>
+        </svg>
+        <div class="speech-bubble" id="robot-greet">Merhaba! Ben Profesör Q. Maceraya hazır mısın? 🚀</div>
+      </div>
+      <div class="home-btns">
+        <button class="btn btn-primary btn-block" id="btn-start-adventure">🧭 Start Adventure</button>
+        <button class="btn btn-ghost btn-block" data-nav="screen-how">❓ How to Play</button>
+        <button class="btn btn-ghost btn-block" data-nav="screen-progress">👤 My Progress</button>
+        <button class="btn btn-ghost btn-block" data-nav="screen-badges">🏅 Badges</button>
+      </div>
+      <div class="home-progress-wrap">
+        <div class="home-progress-label"><span>İlerleme</span><span id="home-progress-pct">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="home-progress-fill" style="width:0%;"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW TO PLAY -->
+  <section id="screen-how" class="screen">
+    <div class="screen-pad">
+      <div class="card">
+        <h2 style="color:var(--forest); margin-top:0;">Nasıl Oynanır? 🎮</h2>
+        <p>1️⃣ Haritada 5 istasyon var. Sırayla açılırlar.</p>
+        <p>2️⃣ Her istasyona girmek için sınıfındaki <b>QR kodu</b> okut.</p>
+        <p>3️⃣ Görevleri tamamla, puan ve yıldız kazan ⭐.</p>
+        <p>4️⃣ İstasyon sonunda Bronze 🥉, Silver 🥈 ya da Gold 🥇 rozet kazan.</p>
+        <p>5️⃣ Tüm istasyonları bitirip hazine sandığını aç ve sertifikanı al! 🏆</p>
+      </div>
+      <button class="btn btn-primary btn-block" data-nav="screen-home">Anladım!</button>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="screen">
+    <div class="map-svg-wrap">
+      <svg viewBox="0 0 360 660" width="100%" id="map-svg">
+        <path class="path-line" d="M180,34 C 140,74 96,94 96,140 C 96,186 264,186 264,232 C 264,278 96,278 96,324 C 96,370 264,370 264,416 C 264,462 96,462 96,508 C 96,554 180,566 180,616"/>
+      </svg>
+    </div>
+    <div class="map-legend">
+      <span><i class="legend-dot" style="background:var(--sun);"></i>Sıradaki</span>
+      <span><i class="legend-dot" style="background:var(--gold);"></i>Gold</span>
+      <span><i class="legend-dot" style="background:var(--silver);"></i>Silver</span>
+      <span><i class="legend-dot" style="background:var(--bronze);"></i>Bronze</span>
+      <span><i class="legend-dot" style="background:#cfc9b6;"></i>Kilitli</span>
+    </div>
+  </section>
+
+  <!-- SCANNER (full screen, used to enter a station) -->
+  <section id="screen-scanner" class="screen">
+    <div class="screen-pad" style="flex:1; display:flex; flex-direction:column;">
+      <div class="card" style="text-align:center;">
+        <h3 style="margin-top:0; color:var(--forest);" id="scan-title">QR Kodu Okut</h3>
+        <p style="font-size:13.5px; color:#5b6b63;" id="scan-desc">Sınıfındaki QR kodu telefonunun kamerasıyla okut.</p>
+      </div>
+      <div class="scan-box"><div id="reader"></div><div class="scan-frame"></div></div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn btn-sky btn-block" id="btn-scan-start">📷 Kamerayı Aç</button>
+        <button class="btn btn-sun btn-block" id="btn-scan-simulate">✨ Kodu Simüle Et (Demo)</button>
+        <button class="btn btn-ghost btn-block" data-nav="screen-map">Haritaya Dön</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATION (dynamic content) -->
+  <section id="screen-station" class="screen">
+    <div class="screen-pad" id="station-body"></div>
+  </section>
+
+  <!-- BADGES -->
+  <section id="screen-badges" class="screen">
+    <div class="screen-pad">
+      <h2 style="color:var(--forest); margin-top:0;">Rozetlerim 🏅</h2>
+      <div class="badge-grid" id="badge-grid"></div>
+      <div style="height:14px;"></div>
+      <button class="btn btn-ghost btn-block" data-nav="screen-home">Ana Sayfaya Dön</button>
+    </div>
+  </section>
+
+  <!-- STUDENT PROGRESS PANEL -->
+  <section id="screen-progress" class="screen">
+    <div class="screen-pad">
+      <h2 style="color:var(--forest); margin-top:0;">Profilim 👤</h2>
+      <div class="card">
+        <label style="font-weight:800; font-size:13px; color:var(--forest);">Ad Soyad</label>
+        <input class="field" id="input-name" placeholder="Adını yaz...">
+        <button class="btn btn-primary btn-block btn-sm" id="btn-save-name">Kaydet</button>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Toplam Puan</b><span id="stat-points">0</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Toplam Yıldız</b><span id="stat-stars">⭐ 0</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Tamamlanma</b><span id="stat-pct">0%</span></div>
+        <div style="display:flex; justify-content:space-between;"><b>Tamamlanan İstasyon</b><span id="stat-done">0/5</span></div>
+      </div>
+      <button class="btn btn-sun btn-block" id="btn-certificate">🏆 Başarı Sertifikamı Al</button>
+      <div style="height:10px;"></div>
+      <button class="btn btn-ghost btn-block" data-nav="screen-home">Ana Sayfaya Dön</button>
+    </div>
+  </section>
+
+  <!-- TEACHER PANEL -->
+  <section id="screen-teacher" class="screen">
+    <div class="screen-pad" id="print-area">
+      <h2 style="color:var(--forest); margin-top:0;">Öğretmen Paneli 🧑‍🏫</h2>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-qr">QR Kodları</button>
+        <button class="tab-btn" data-tab="tab-edit">Soruları Düzenle</button>
+        <button class="tab-btn" data-tab="tab-report">İlerleme Raporu</button>
+      </div>
+
+      <div class="tabpane active" id="tab-qr">
+        <p style="font-size:13px; color:#5b6b63;">Bu kodları yazdırıp sınıfın farklı noktalarına yerleştir. Öğrenciler istasyona girmek için okutacak.</p>
+        <div class="qr-grid" id="qr-grid"></div>
+        <button class="btn btn-ghost btn-block" style="margin-top:14px;" onclick="window.print()">🖨️ Yazdır</button>
+      </div>
+
+      <div class="tabpane" id="tab-edit">
+        <p style="font-size:13px; color:#5b6b63;">İstasyon seç, JSON formatındaki soruları düzenle ve kaydet.</p>
+        <select class="field" id="edit-station-select">
+          <option value="1">İstasyon 1 — Learn</option>
+          <option value="2">İstasyon 2 — Subject Detective</option>
+          <option value="3">İstasyon 3 — Verb Factory</option>
+          <option value="4">İstasyon 4 — QR Treasure Hunt</option>
+          <option value="5">İstasyon 5 — Escape Room</option>
+        </select>
+        <textarea class="jsoneditor" id="edit-json"></textarea>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn btn-primary btn-sm" id="btn-save-json">💾 Kaydet</button>
+          <button class="btn btn-ghost btn-sm" id="btn-reset-json">↩️ Varsayılana Dön</button>
+        </div>
+      </div>
+
+      <div class="tabpane" id="tab-report">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Öğrenci</b><span id="rep-name">—</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Puan</b><span id="rep-points">0</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b>Tamamlanan</b><span id="rep-done">0/5</span></div>
+          <div style="display:flex; justify-content:space-between;"><b>Rozetler</b><span id="rep-badges">—</span></div>
+        </div>
+        <p style="font-size:12px; color:#8a8272;">Not: Bu demo tek cihazın yerel verisini gösterir (Local Storage). Tüm sınıfın puanlarını tek panelde toplamak için Firebase/Supabase gibi bir arka uç bağlanmalıdır.</p>
+        <button class="btn btn-coral btn-block btn-sm" id="btn-reset-progress">🗑️ İlerlemeyi Sıfırla</button>
+      </div>
+
+      <button class="btn btn-ghost btn-block" style="margin-top:16px;" data-nav="screen-home">Ana Sayfaya Dön</button>
+    </div>
+  </section>
+
+  <div class="modal-overlay" id="name-modal">
+    <div class="modal-box">
+      <h3 style="margin-top:0; color:var(--forest);">Maceraya başlamadan önce...</h3>
+      <p style="font-size:13.5px;">Adını yazar mısın? 😊</p>
+      <input class="field" id="modal-name-input" placeholder="Adın Soyadın">
+      <button class="btn btn-primary btn-block" id="modal-name-ok">Başla! 🚀</button>
+    </div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <button class="install-fab" id="install-fab">⬇️ Ana Ekrana Ekle</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+/* ============ STATE ============ */
+const STATE_KEY = "pq_state_v1";
+function defaultState(){
+  return { studentName:"", points:0, stars:0, completed:[false,false,false,false,false],
+           badges:[null,null,null,null,null], unlockedUpTo:1, teacherUnlocked:false };
+}
+let state = loadState();
+function loadState(){
+  try{ const raw = localStorage.getItem(STATE_KEY); if(!raw) return defaultState();
+    const parsed = JSON.parse(raw); return Object.assign(defaultState(), parsed);
+  }catch(e){ return defaultState(); }
+}
+function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); refreshChrome(); }
+
+/* ============ NAV ============ */
+const history_stack = ["screen-home"];
+function showScreen(id, push=true){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("tb-back").style.visibility = (id==="screen-home") ? "hidden" : "visible";
+  const titles = {"screen-home":"Present Quest","screen-how":"Nasıl Oynanır","screen-map":"Macera Haritası",
+    "screen-scanner":"QR Tara","screen-station":"İstasyon","screen-badges":"Rozetlerim","screen-progress":"Profilim",
+    "screen-teacher":"Öğretmen Paneli"};
+  document.getElementById("tb-title").textContent = titles[id] || "Present Quest";
+  if(push){ history_stack.push(id); }
+  if(id==="screen-map") renderMap();
+  if(id==="screen-badges") renderBadges();
+  if(id==="screen-progress") renderProgressPanel();
+  if(id==="screen-teacher") renderTeacherPanel();
+  if(id==="screen-home") renderHome();
+  document.querySelector(".screen.active").scrollTop = 0;
+}
+document.getElementById("tb-back").addEventListener("click", ()=>{
+  if(history_stack.length>1){ history_stack.pop(); showScreen(history_stack[history_stack.length-1], false); }
+  else showScreen("screen-home");
+});
+document.querySelectorAll("[data-nav]").forEach(el=>{
+  el.addEventListener("click", ()=>{ playClick(); showScreen(el.getAttribute("data-nav")); });
+});
+
+function refreshChrome(){
+  const doneCount = state.completed.filter(Boolean).length;
+  const pct = Math.round(doneCount/5*100);
+  document.getElementById("tb-points").textContent = "⭐ " + state.points;
+  document.getElementById("appbar-progress-fill").style.width = pct + "%";
+}
+
+/* ============ TOAST ============ */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+/* ============ SOUND ============ */
+let audioCtx;
+function ensureAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function beep(freq, dur, type="sine", delay=0){
+  ensureAudio(); if(!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+  osc.type = type; osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(0.18, t0+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0+dur+0.02);
+}
+function playClick(){ beep(520,.06,"square"); }
+function playCorrect(){ beep(523.25,.12,"sine",0); beep(659.25,.12,"sine",.11); beep(783.99,.16,"sine",.22); }
+function playWrong(){ beep(220,.18,"sawtooth"); }
+function speak(text){
+  try{
+    if(!("speechSynthesis" in window)){ toast("Bu tarayıcı sesli okumayı desteklemiyor."); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.88;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ============ CONFETTI ============ */
+const confettiCanvas = document.getElementById("confetti-canvas");
+const ctx = confettiCanvas.getContext("2d");
+function resizeConfetti(){ const r = document.getElementById("phone").getBoundingClientRect(); confettiCanvas.width=r.width; confettiCanvas.height=r.height; }
+window.addEventListener("resize", resizeConfetti); resizeConfetti();
+let confettiParticles = [];
+function confettiBurst(count=60){
+  resizeConfetti();
+  const colors = ["#40916C","#FFC93C","#FF6B6B","#4EA8DE","#9D6BFF"];
+  for(let i=0;i<count;i++){
+    confettiParticles.push({
+      x: confettiCanvas.width/2, y: confettiCanvas.height*0.25,
+      vx:(Math.random()-0.5)*9, vy: Math.random()*-7-2, g:0.28,
+      size: Math.random()*6+4, color: colors[Math.floor(Math.random()*colors.length)],
+      rot: Math.random()*360, vr:(Math.random()-0.5)*14, life:100
+    });
+  }
+  if(!confettiRunning){ confettiRunning=true; requestAnimationFrame(confettiLoop); }
+}
+let confettiRunning=false;
+function confettiLoop(){
+  ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  confettiParticles.forEach(p=>{
+    p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= 1;
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+    ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+    ctx.restore();
+  });
+  confettiParticles = confettiParticles.filter(p=>p.life>0 && p.y < confettiCanvas.height+40);
+  if(confettiParticles.length>0){ requestAnimationFrame(confettiLoop); } else { confettiRunning=false; ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
+}
+
+/* ============ QUESTION DATA ============ */
+const DEFAULT_QUESTIONS = {
+1:[
+ {type:"mcq", q:"I ___ football every day.", options:["play","plays","playing"], correct:0},
+ {type:"mcq", q:"She ___ tennis on Sundays.", options:["play","plays","playing"], correct:1},
+ {type:"mcq", q:"They ___ English at school.", options:["study","studies","studys"], correct:0},
+ {type:"truefalse", q:"\"He go to school every day.\" — bu cümle doğru mu?", options:["Doğru","Yanlış"], correct:1},
+ {type:"mcq", q:"My cat ___ milk every morning.", options:["drink","drinks","drinking"], correct:1}
+],
+2:[
+ {type:"wordpick", sentence:"She drinks milk.", subject:"She"},
+ {type:"wordpick", sentence:"He plays chess.", subject:"He"},
+ {type:"wordpick", sentence:"They study Math.", subject:"They"},
+ {type:"wordpick", sentence:"Ali runs fast.", subject:"Ali"},
+ {type:"wordpick", sentence:"We swim every weekend.", subject:"We"}
+],
+3:[
+ {type:"fillblank", q:"She ___ (play) the piano.", options:["plays","playes","plaies"], correct:0},
+ {type:"fillblank", q:"He ___ (watch) cartoons.", options:["watchs","watches","watchies"], correct:1},
+ {type:"fillblank", q:"She ___ (study) hard.", options:["studys","studies","studyes"], correct:1},
+ {type:"fillblank", q:"He ___ (go) to school.", options:["goes","gos","going"], correct:0},
+ {type:"fillblank", q:"She ___ (fix) the toy.", options:["fixs","fixes","fixies"], correct:1}
+],
+4:[
+ {type:"truefalse", q:"\"Cats likes fish.\" — bu cümle doğru mu?", options:["Doğru","Yanlış"], correct:1},
+ {type:"imagechoice", q:"Kim her sabah kahvaltı yapar? (She eats breakfast.)", options:[{emoji:"🧒",label:"Child"},{emoji:"🐶",label:"Dog"},{emoji:"🚗",label:"Car"}], correct:0},
+ {type:"listen", text:"He brushes his teeth every morning.", q:"Cümledeki fiil hangisi?", options:["brush","brushes","brushing"], correct:1},
+ {type:"order", words:["She","reads","books","every","night"]},
+ {type:"mcq", q:"We ___ to music after dinner.", options:["listen","listens","listenes"], correct:0}
+],
+5:[
+ {type:"order", words:["They","play","football","on","weekends"]},
+ {type:"match", pairs:[["I","play"],["She","plays"],["We","study"],["He","studies"]]},
+ {type:"fillblank", q:"She ___ (do) her homework.", options:["dos","does","doing"], correct:1},
+ {type:"listen", text:"They travel to school by bus.", q:"Fiil hangisi?", options:["travel","travels","traveling"], correct:0},
+ {type:"truefalse", q:"\"I plays guitar.\" — bu cümle doğru mu?", options:["Doğru","Yanlış"], correct:1}
+]
+};
+const LEARN_SLIDES = [
+ {icon:"⚽", en:"I play football.", tr:"Ben ve you/we/they ile fiil yalın halde kullanılır."},
+ {icon:"🎾", en:"She plays tennis.", tr:"He / She / It ile fiile -s / -es / -ies eklenir."},
+ {icon:"📚", en:"They study English.", tr:"Genel alışkanlıkları ve gerçekleri anlatmak için kullanılır."}
+];
+const STATION_META = [
+ {id:1, title:"Learn", subtitle:"Simple Present'i Keşfet", icon:"📖"},
+ {id:2, title:"Subject Detective", subtitle:"Özneyi Bul", icon:"🔍"},
+ {id:3, title:"Verb Factory", subtitle:"Fiil Fabrikası", icon:"⚙️"},
+ {id:4, title:"QR Treasure Hunt", subtitle:"QR Hazine Avı", icon:"🗺️"},
+ {id:5, title:"Escape Room", subtitle:"Kaçış Odası", icon:"🔐"}
+];
+function getQuestions(stationId){
+  try{
+    const raw = localStorage.getItem("pq_custom_q_"+stationId);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return DEFAULT_QUESTIONS[stationId];
+}
+
+/* ============ HOME ============ */
+function renderHome(){
+  document.getElementById("robot-greet").textContent = state.studentName
+    ? `Tekrar hoş geldin, ${state.studentName}! Devam edelim mi? 🚀`
+    : "Merhaba! Ben Profesör Q. Maceraya hazır mısın? 🚀";
+  const doneCount = state.completed.filter(Boolean).length;
+  const pct = Math.round(doneCount/5*100);
+  document.getElementById("home-progress-pct").textContent = pct+"%";
+  document.getElementById("home-progress-fill").style.width = pct+"%";
+  refreshChrome();
+}
+document.getElementById("btn-start-adventure").addEventListener("click", ()=>{
+  playClick();
+  if(!state.studentName){
+    document.getElementById("name-modal").classList.add("show");
+  } else {
+    showScreen("screen-map");
+  }
+});
+document.getElementById("modal-name-ok").addEventListener("click", ()=>{
+  const v = document.getElementById("modal-name-input").value.trim();
+  if(!v){ toast("Lütfen adını yaz 🙂"); return; }
+  state.studentName = v; saveState();
+  document.getElementById("name-modal").classList.remove("show");
+  showScreen("screen-map");
+});
+
+/* long-press on home title 5x opens teacher panel (hidden entry) */
+let titleTaps = 0, titleTapTimer;
+document.querySelector(".eyebrow").addEventListener("click", ()=>{
+  titleTaps++; clearTimeout(titleTapTimer);
+  titleTapTimer = setTimeout(()=>titleTaps=0, 1200);
+  if(titleTaps>=5){ titleTaps=0; showScreen("screen-teacher"); }
+});
+
+/* ============ MAP ============ */
+const NODE_POS = [ {x:96,y:140}, {x:264,y:232}, {x:96,y:324}, {x:264,y:416}, {x:96,y:508} ];
+function renderMap(){
+  const svg = document.getElementById("map-svg");
+  svg.querySelectorAll(".map-node, .map-node-label, .map-icon, .start-finish").forEach(n=>n.remove());
+  // start
+  const start = document.createElementNS("http://www.w3.org/2000/svg","text");
+  start.setAttribute("x",180); start.setAttribute("y",26); start.setAttribute("text-anchor","middle");
+  start.setAttribute("class","node-label start-finish"); start.textContent = "🚩 START"; svg.appendChild(start);
+  const finish = document.createElementNS("http://www.w3.org/2000/svg","text");
+  finish.setAttribute("x",180); finish.setAttribute("y",638); finish.setAttribute("text-anchor","middle");
+  finish.setAttribute("class","node-label start-finish"); finish.textContent = "🏆 FINISH"; svg.appendChild(finish);
+
+  NODE_POS.forEach((pos,idx)=>{
+    const id = idx+1;
+    const done = state.completed[idx];
+    const isCurrent = (!done && id===state.unlockedUpTo);
+    const locked = (!done && id>state.unlockedUpTo);
+    const badge = state.badges[idx];
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("class","map-node");
+    let cls = "node-circle ";
+    if(locked) cls += "locked"; else if(isCurrent) cls += "current node-pulse"; else cls += "done-"+(badge||"bronze");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    circle.setAttribute("cx",pos.x); circle.setAttribute("cy",pos.y); circle.setAttribute("r",30);
+    circle.setAttribute("class",cls);
+    circle.addEventListener("click", ()=>onNodeClick(id));
+    const icon = document.createElementNS("http://www.w3.org/2000/svg","text");
+    icon.setAttribute("x",pos.x); icon.setAttribute("y",pos.y+7); icon.setAttribute("text-anchor","middle");
+    icon.setAttribute("font-size","22"); icon.setAttribute("class","map-icon");
+    icon.setAttribute("style","pointer-events:none;");
+    icon.textContent = locked ? "🔒" : (STATION_META[idx].icon);
+    const label = document.createElementNS("http://www.w3.org/2000/svg","text");
+    label.setAttribute("x",pos.x); label.setAttribute("y",pos.y+50); label.setAttribute("text-anchor","middle");
+    label.setAttribute("class","node-label map-node-label");
+    label.textContent = "Station "+id;
+    svg.appendChild(circle); svg.appendChild(icon); svg.appendChild(label);
+  });
+}
+let pendingStationId = null;
+function onNodeClick(id){
+  playClick();
+  const done = state.completed[id-1];
+  if(done){
+    pendingStationId = id;
+    buildStationUI(id);
+    showScreen("screen-station");
+    return;
+  }
+  if(id === state.unlockedUpTo){
+    openScannerFor(id);
+    return;
+  }
+  toast("🔒 Önce diğer istasyonları tamamla!");
+  const svg = document.getElementById("map-svg");
+  svg.classList.add("shake"); setTimeout(()=>svg.classList.remove("shake"),400);
+}
+
+/* ============ SCANNER ============ */
+let html5QrInstance = null;
+function openScannerFor(id){
+  pendingStationId = id;
+  document.getElementById("scan-title").textContent = "QR Kodu Okut — Station "+id;
+  document.getElementById("scan-desc").textContent = "Sınıfındaki Station "+id+" QR kodunu telefonunun kamerasıyla okut.";
+  showScreen("screen-scanner");
+}
+function expectedCodeFor(id){ return "PQ-STATION-"+id; }
+document.getElementById("btn-scan-start").addEventListener("click", ()=>{
+  playClick();
+  startCamera("reader", expectedCodeFor(pendingStationId), (success)=>{
+    if(success){ enterStation(pendingStationId); }
+  });
+});
+document.getElementById("btn-scan-simulate").addEventListener("click", ()=>{
+  playClick();
+  toast("✨ Kod okundu (Demo)");
+  setTimeout(()=>enterStation(pendingStationId), 400);
+});
+function startCamera(elementId, expectedCode, cb){
+  if(typeof Html5Qrcode === "undefined"){
+    toast("Kamera kütüphanesi yüklenemedi. İnternete bağlanıp tekrar dene ya da Demo butonunu kullan.");
+    return;
+  }
+  stopCamera();
+  html5QrInstance = new Html5Qrcode(elementId);
+  html5QrInstance.start(
+    { facingMode:"environment" }, { fps:10, qrbox:220 },
+    (decodedText)=>{
+      if(decodedText.trim() === expectedCode){
+        toast("✅ Doğru kod okundu!");
+        stopCamera(); cb(true);
+      } else {
+        toast("❌ Bu kod bu istasyon için değil.");
+      }
+    },
+    ()=>{}
+  ).catch(()=>{ toast("Kameraya erişilemedi. Demo butonunu kullanabilirsin."); });
+}
+function stopCamera(){
+  if(html5QrInstance){ try{ html5QrInstance.stop().catch(()=>{}); }catch(e){} html5QrInstance=null; }
+}
+function enterStation(id){
+  buildStationUI(id);
+  showScreen("screen-station");
+}
+
+/* ============ STATION ENGINE ============ */
+function buildStationUI(id){
+  const meta = STATION_META[id-1];
+  const body = document.getElementById("station-body");
+  body.innerHTML = "";
+  const header = document.createElement("div");
+  header.className = "card";
+  header.innerHTML = `<div style="font-size:34px; text-align:center;">${meta.icon}</div>
+    <h2 style="text-align:center; margin:6px 0 2px; color:var(--forest);">${meta.title}</h2>
+    <p style="text-align:center; margin:0; color:#5b6b63; font-size:13.5px;">${meta.subtitle}</p>`;
+  body.appendChild(header);
+
+  if(id===1 && !state.completed[0]){
+    renderLearnSlides(body, ()=>{ startQuiz(id, body); });
+  } else {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-primary btn-block";
+    btn.textContent = state.completed[id-1] ? "🔁 Tekrar Oyna" : "▶️ Göreve Başla";
+    btn.onclick = ()=>{ playClick(); startQuiz(id, body); };
+    body.appendChild(btn);
+  }
+}
+
+function renderLearnSlides(body, onDone){
+  let i = 0;
+  const wrap = document.createElement("div");
+  body.appendChild(wrap);
+  function draw(){
+    const s = LEARN_SLIDES[i];
+    wrap.innerHTML = `<div class="card" style="text-align:center;">
+      <div style="font-size:46px;">${s.icon}</div>
+      <div class="display" style="font-size:20px; color:var(--forest); margin:8px 0 4px;">${s.en}</div>
+      <p style="font-size:13.5px; color:#5b6b63;">${s.tr}</p>
+      <button class="btn btn-sky btn-sm" id="learn-listen">🔊 Dinle</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      ${i>0 ? `<button class="btn btn-ghost btn-block" id="learn-prev">Geri</button>` : ``}
+      <button class="btn btn-primary btn-block" id="learn-next">${i<LEARN_SLIDES.length-1 ? "İleri" : "Quizi Başlat 📝"}</button>
+    </div>`;
+    document.getElementById("learn-listen").onclick = ()=>speak(s.en);
+    const prevBtn = document.getElementById("learn-prev");
+    if(prevBtn) prevBtn.onclick = ()=>{ i--; draw(); };
+    document.getElementById("learn-next").onclick = ()=>{
+      playClick();
+      if(i<LEARN_SLIDES.length-1){ i++; draw(); } else { onDone(); }
+    };
+  }
+  draw();
+}
+
+function startQuiz(stationId, body){
+  const questions = getQuestions(stationId);
+  body.innerHTML = `<div class="quiz-dots" id="quiz-dots"></div><div id="quiz-area"></div>`;
+  const dotsWrap = document.getElementById("quiz-dots");
+  questions.forEach(()=>{ const d=document.createElement("div"); d.className="qdot"; dotsWrap.appendChild(d); });
+  let idx=0, correctCount=0;
+  const qrGated = (stationId===4);
+
+  function updateDots(){
+    [...dotsWrap.children].forEach((d,i)=>{
+      d.className = "qdot" + (i<idx?" done":"") + (i===idx?" active":"");
+    });
+  }
+  function renderGate(cb){
+    const area = document.getElementById("quiz-area");
+    const codeLetter = String.fromCharCode(97+idx);
+    const code = "PQ-STATION-4-"+codeLetter;
+    area.innerHTML = `<div class="q-card" style="text-align:center;">
+      <div style="font-size:40px;">🔓</div>
+      <h3 style="color:var(--forest);">Yeni QR kodu aktif!</h3>
+      <p style="font-size:13.5px; color:#5b6b63;">Sınıftaki <b>Station 4 - ${codeLetter.toUpperCase()}</b> kodunu bul ve okut.</p>
+      <div class="scan-box" style="aspect-ratio:4/3;"><div id="reader-mini"></div><div class="scan-frame"></div></div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn btn-sky btn-block" id="gate-scan">📷 Kamerayı Aç</button>
+        <button class="btn btn-sun btn-block" id="gate-sim">✨ Kodu Simüle Et (Demo)</button>
+      </div>
+    </div>`;
+    document.getElementById("gate-scan").onclick = ()=>{
+      startCamera("reader-mini", code, (ok)=>{ if(ok) cb(); });
+    };
+    document.getElementById("gate-sim").onclick = ()=>{ toast("✨ Kod okundu (Demo)"); stopCamera(); setTimeout(cb,300); };
+  }
+  function next(){
+    stopCamera();
+    updateDots();
+    if(idx>=questions.length){ finish(); return; }
+    if(qrGated && idx>0){ renderGate(()=>renderQ(questions[idx])); }
+    else renderQ(questions[idx]);
+  }
+  function renderQ(q){
+    const area = document.getElementById("quiz-area");
+    let html = `<div class="q-card"><div class="q-text">${q.q || "Görevi tamamla:"}</div>`;
+    if(q.type==="mcq" || q.type==="fillblank" || q.type==="truefalse"){
+      html += `<div class="q-options">`;
+      q.options.forEach((o,i)=>{ html += `<button class="opt-btn" data-i="${i}">${o}</button>`; });
+      html += `</div>`;
+    } else if(q.type==="imagechoice"){
+      html += `<div class="opt-grid">`;
+      q.options.forEach((o,i)=>{ html += `<div class="img-opt" data-i="${i}"><span class="em">${o.emoji}</span>${o.label}</div>`; });
+      html += `</div>`;
+    } else if(q.type==="wordpick"){
+      html = `<div class="q-card"><div class="q-text">Cümledeki özneyi (subject) bul:</div><div class="word-tokens">`;
+      q.sentence.split(" ").forEach((w,i)=>{ html += `<button class="tok-btn" data-w="${w.replace(/[.?!]/,"")}">${w}</button>`; });
+      html += `</div>`;
+    } else if(q.type==="listen"){
+      html += `<div class="listen-row"><button class="listen-btn" id="listen-play">🔊</button><span style="font-size:13px; color:#5b6b63;">Cümleyi dinle, sonra doğru fiili seç.</span></div><div class="q-options">`;
+      q.options.forEach((o,i)=>{ html += `<button class="opt-btn" data-i="${i}">${o}</button>`; });
+      html += `</div>`;
+    } else if(q.type==="order"){
+      const shuffled = [...q.words].sort(()=>Math.random()-0.5);
+      html += `<div class="order-line" id="order-line"></div><div class="order-bank" id="order-bank"></div>
+        <button class="btn btn-primary btn-block btn-sm" id="order-check">Kontrol Et ✅</button>`;
+      area.innerHTML = html + `</div>`;
+      const bank = document.getElementById("order-bank"), line = document.getElementById("order-line");
+      let built = [];
+      function drawChips(){
+        bank.innerHTML=""; line.innerHTML="";
+        shuffled.forEach((w,i)=>{
+          if(built.includes(i)) return;
+          const c=document.createElement("button"); c.className="chip"; c.textContent=w;
+          c.onclick=()=>{ built.push(i); drawChips(); };
+          bank.appendChild(c);
+        });
+        built.forEach((i)=>{
+          const c=document.createElement("button"); c.className="chip"; c.style.background="var(--leaf)"; c.textContent=shuffled[i];
+          c.onclick=()=>{ built = built.filter(x=>x!==i); drawChips(); };
+          line.appendChild(c);
+        });
+      }
+      drawChips();
+      document.getElementById("order-check").onclick = ()=>{
+        const built_words = built.map(i=>shuffled[i]);
+        const ok = JSON.stringify(built_words) === JSON.stringify(q.words);
+        gradeResult(ok, q.words.join(" "));
+      };
+      return;
+    } else if(q.type==="match"){
+      const lefts = q.pairs.map((p,i)=>({text:p[0], pair:i}));
+      const rights = [...q.pairs.map((p,i)=>({text:p[1], pair:i}))].sort(()=>Math.random()-0.5);
+      html += `<div class="match-cols"><div class="match-col" id="match-left"></div><div class="match-col" id="match-right"></div></div>`;
+      area.innerHTML = html + `</div>`;
+      const leftCol = document.getElementById("match-left"), rightCol = document.getElementById("match-right");
+      let selLeft=null, selRight=null, matched=0;
+      lefts.forEach((item,i)=>{
+        const b=document.createElement("button"); b.className="match-item"; b.textContent=item.text;
+        b.onclick=()=>{ if(b.classList.contains("matched"))return; document.querySelectorAll("#match-left .match-item").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); selLeft={idx:i,pair:item.pair,el:b}; tryMatch(); };
+        leftCol.appendChild(b);
+      });
+      rights.forEach((item,i)=>{
+        const b=document.createElement("button"); b.className="match-item"; b.textContent=item.text;
+        b.onclick=()=>{ if(b.classList.contains("matched"))return; document.querySelectorAll("#match-right .match-item").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); selRight={idx:i,pair:item.pair,el:b}; tryMatch(); };
+        rightCol.appendChild(b);
+      });
+      function tryMatch(){
+        if(selLeft && selRight){
+          if(selLeft.pair === selRight.pair){
+            selLeft.el.classList.add("matched"); selRight.el.classList.add("matched");
+            selLeft.el.classList.remove("sel"); selRight.el.classList.remove("sel");
+            matched++; playCorrect(); selLeft=null; selRight=null;
+            if(matched === q.pairs.length){ setTimeout(()=>gradeResult(true, ""), 400); }
+          } else {
+            playWrong();
+            setTimeout(()=>{ if(selLeft&&selLeft.el)selLeft.el.classList.remove("sel"); if(selRight&&selRight.el)selRight.el.classList.remove("sel"); selLeft=null; selRight=null; }, 500);
+          }
+        }
+      }
+      return;
+    }
+    area.innerHTML = html + `<div class="feedback-banner" id="fb"></div></div>`;
+    if(q.type==="listen"){
+      document.getElementById("listen-play").onclick = ()=>speak(q.text);
+      speak(q.text);
+    }
+    if(q.type==="wordpick"){
+      area.querySelectorAll(".tok-btn").forEach(b=>{
+        b.onclick = ()=> gradeAnswerBtn(b.getAttribute("data-w")===q.subject, b, area.querySelectorAll(".tok-btn"));
+      });
+    } else if(q.type==="imagechoice"){
+      area.querySelectorAll(".img-opt").forEach(b=>{
+        b.onclick = ()=> gradeAnswerBtn(Number(b.getAttribute("data-i"))===q.correct, b, area.querySelectorAll(".img-opt"));
+      });
+    } else {
+      area.querySelectorAll(".opt-btn").forEach(b=>{
+        b.onclick = ()=> gradeAnswerBtn(Number(b.getAttribute("data-i"))===q.correct, b, area.querySelectorAll(".opt-btn"));
+      });
+    }
+  }
+  let answered=false;
+  function gradeAnswerBtn(isCorrect, el, allEls){
+    if(answered) return; answered=true;
+    allEls.forEach(e=>e.disabled=true);
+    el.classList.add(isCorrect?"correct":"wrong");
+    const fb = document.getElementById("fb");
+    if(fb){ fb.classList.add("show", isCorrect?"ok":"no"); fb.textContent = isCorrect? "Harika! Doğru cevap 🎉" : "Tekrar deneyelim, üzülme 💪"; }
+    if(isCorrect){ playCorrect(); correctCount++; } else { playWrong(); }
+    answered=false; // reset flag holder pattern below via closure var
+    setTimeout(()=>{ idx++; next(); }, 1200);
+  }
+  function gradeResult(isCorrect, correctText){
+    const area = document.getElementById("quiz-area");
+    const fb = document.createElement("div");
+    fb.className = "feedback-banner show " + (isCorrect?"ok":"no");
+    fb.textContent = isCorrect ? "Harika! Doğru sıralama 🎉" : ("Doğrusu: " + correctText);
+    area.appendChild(fb);
+    if(isCorrect){ playCorrect(); correctCount++; } else { playWrong(); }
+    setTimeout(()=>{ idx++; next(); }, 1400);
+  }
+  function finish(){
+    stopCamera();
+    const total = questions.length;
+    const pass = correctCount >= Math.ceil(total*0.6);
+    let badge = "bronze";
+    if(correctCount===total) badge="gold"; else if(correctCount>=Math.ceil(total*0.8)) badge="silver";
+    const area = document.getElementById("quiz-area");
+    document.getElementById("quiz-dots").style.display="none";
+    if(pass){
+      const wasAlreadyDone = state.completed[stationId-1];
+      state.completed[stationId-1] = true;
+      state.badges[stationId-1] = badge;
+      if(!wasAlreadyDone){
+        state.points += correctCount*10;
+        state.stars += correctCount;
+        if(stationId === state.unlockedUpTo) state.unlockedUpTo = Math.min(stationId+1, 6);
+      }
+      saveState();
+      confettiBurst(70);
+      const medalEmoji = {bronze:"🥉",silver:"🥈",gold:"🥇"}[badge];
+      const allDone = state.completed.every(Boolean);
+      area.innerHTML = `<div class="q-card" style="text-align:center;">
+        <div style="font-size:50px;">${medalEmoji}</div>
+        <h3 style="color:var(--forest);">İstasyon Tamamlandı!</h3>
+        <p>${correctCount}/${total} doğru — ${state.points} toplam puan</p>
+        ${allDone ? `<div class="chest">🏆</div><p><b>Tebrikler! Tüm istasyonları tamamladın!</b></p>
+          <button class="btn btn-sun btn-block" data-nav="screen-progress">Sertifikamı Al 🏆</button>` : ``}
+        <button class="btn btn-primary btn-block" data-nav="screen-map">Haritaya Dön</button>
+      </div>`;
+      area.querySelectorAll("[data-nav]").forEach(el=>el.addEventListener("click", ()=>{ playClick(); showScreen(el.getAttribute("data-nav")); }));
+    } else {
+      area.innerHTML = `<div class="q-card" style="text-align:center;">
+        <div style="font-size:44px;">💪</div>
+        <h3 style="color:var(--forest);">Neredeyse oldu!</h3>
+        <p>${correctCount}/${total} doğru. Geçmek için biraz daha pratik yapalım.</p>
+        <button class="btn btn-primary btn-block" id="retry-btn">🔁 Tekrar Dene</button>
+        <button class="btn btn-ghost btn-block" data-nav="screen-map">Haritaya Dön</button>
+      </div>`;
+      document.getElementById("retry-btn").onclick = ()=>{ playClick(); startQuiz(stationId, document.getElementById("station-body")); };
+      area.querySelector("[data-nav]").addEventListener("click", ()=>{ playClick(); showScreen("screen-map"); });
+    }
+  }
+  next();
+}
+
+/* ============ BADGES ============ */
+function renderBadges(){
+  const grid = document.getElementById("badge-grid");
+  grid.innerHTML = "";
+  STATION_META.forEach((m,i)=>{
+    const badge = state.badges[i];
+    const cls = badge ? badge : "locked";
+    const emoji = badge==="gold" ? "🥇" : badge==="silver" ? "🥈" : badge==="bronze" ? "🥉" : "🔒";
+    const div = document.createElement("div"); div.className="badge-item";
+    div.innerHTML = `<div class="medal ${cls}">${emoji}</div><div class="bname">${m.title}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ============ STUDENT PROGRESS ============ */
+function renderProgressPanel(){
+  document.getElementById("input-name").value = state.studentName;
+  document.getElementById("stat-points").textContent = state.points;
+  document.getElementById("stat-stars").textContent = "⭐ " + state.stars;
+  const doneCount = state.completed.filter(Boolean).length;
+  document.getElementById("stat-pct").textContent = Math.round(doneCount/5*100)+"%";
+  document.getElementById("stat-done").textContent = doneCount+"/5";
+  document.getElementById("btn-certificate").disabled = doneCount<5;
+}
+document.getElementById("btn-save-name").addEventListener("click", ()=>{
+  const v = document.getElementById("input-name").value.trim();
+  if(!v){ toast("Lütfen adını yaz."); return; }
+  state.studentName = v; saveState(); toast("Kaydedildi ✅");
+});
+document.getElementById("btn-certificate").addEventListener("click", ()=>{
+  if(state.completed.filter(Boolean).length<5){ toast("Önce tüm istasyonları tamamla!"); return; }
+  generateCertificate();
+});
+function generateCertificate(){
+  const canvas = document.createElement("canvas");
+  canvas.width=1000; canvas.height=700;
+  const c = canvas.getContext("2d");
+  const grad = c.createLinearGradient(0,0,1000,700);
+  grad.addColorStop(0,"#FFF8ED"); grad.addColorStop(1,"#FCEFD1");
+  c.fillStyle=grad; c.fillRect(0,0,1000,700);
+  c.strokeStyle="#40916C"; c.lineWidth=14; c.strokeRect(20,20,960,660);
+  c.strokeStyle="#FFC93C"; c.lineWidth=4; c.strokeRect(40,40,920,620);
+  c.fillStyle="#1B4332"; c.textAlign="center";
+  c.font="700 26px Georgia"; c.fillText("PRESENT QUEST: QR ADVENTURE", 500, 140);
+  c.font="700 44px Georgia"; c.fillText("Başarı Sertifikası", 500, 210);
+  c.font="italic 22px Georgia"; c.fillText("işbu belge", 500, 300);
+  c.font="700 52px Georgia"; c.fillStyle="#FF6B6B"; c.fillText(state.studentName || "Öğrenci", 500, 370);
+  c.fillStyle="#1B4332"; c.font="22px Georgia";
+  c.fillText("Simple Present Tense maceresini başarıyla tamamladığını", 500, 430);
+  c.fillText("gösterir. Toplam " + state.points + " puan ve " + state.stars + " yıldız kazanıldı! 🌟", 500, 465);
+  c.font="18px Georgia"; c.fillText(new Date().toLocaleDateString("tr-TR"), 500, 560);
+  c.font="700 20px Georgia"; c.fillText("🏆 Profesör Q", 500, 610);
+  const link = document.createElement("a");
+  link.download = "present-quest-sertifika.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  toast("Sertifikan indiriliyor! 🎉");
+  confettiBurst(90);
+}
+
+/* ============ TEACHER PANEL ============ */
+function renderTeacherPanel(){
+  const qrGrid = document.getElementById("qr-grid");
+  qrGrid.innerHTML = "";
+  const codes = [1,2,3,4,5].map(id=>({id, code:"PQ-STATION-"+id, label:"Station "+id}));
+  [1,2,3,4].forEach(n=>{ const l=String.fromCharCode(97+n-1); /* not used, placeholder */ });
+  ["a","b","c","d","e"].forEach(l=>{ codes.push({id:"4"+l, code:"PQ-STATION-4-"+l, label:"Station 4 - "+l.toUpperCase()}); });
+  codes.forEach(item=>{
+    const div = document.createElement("div"); div.className="qr-card";
+    const qDiv = document.createElement("div"); qDiv.id="qrc-"+item.id;
+    div.appendChild(qDiv);
+    const lab = document.createElement("div"); lab.className="qr-label"; lab.textContent=item.label;
+    div.appendChild(lab);
+    qrGrid.appendChild(div);
+    if(typeof QRCode !== "undefined"){
+      new QRCode(qDiv, {text:item.code, width:110, height:110, colorDark:"#1B4332", colorLight:"#ffffff"});
+    } else {
+      qDiv.innerHTML = `<div style="font-size:11px; padding:10px; color:#b23a3a;">QR kütüphanesi yüklenemedi (internet gerekli)</div>`;
+    }
+  });
+  loadJsonEditor();
+  const doneCount = state.completed.filter(Boolean).length;
+  document.getElementById("rep-name").textContent = state.studentName || "(isimsiz)";
+  document.getElementById("rep-points").textContent = state.points;
+  document.getElementById("rep-done").textContent = doneCount+"/5";
+  document.getElementById("rep-badges").textContent = state.badges.map(b=> b ? ({bronze:"🥉",silver:"🥈",gold:"🥇"}[b]) : "—").join(" ");
+}
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.getAttribute("data-tab")).classList.add("active");
+  });
+});
+function loadJsonEditor(){
+  const sel = document.getElementById("edit-station-select");
+  document.getElementById("edit-json").value = JSON.stringify(getQuestions(Number(sel.value)), null, 2);
+}
+document.getElementById("edit-station-select").addEventListener("change", loadJsonEditor);
+document.getElementById("btn-save-json").addEventListener("click", ()=>{
+  const sel = Number(document.getElementById("edit-station-select").value);
+  try{
+    const parsed = JSON.parse(document.getElementById("edit-json").value);
+    if(!Array.isArray(parsed)) throw new Error("Dizi olmalı");
+    localStorage.setItem("pq_custom_q_"+sel, JSON.stringify(parsed));
+    toast("Kaydedildi ✅ Bu istasyon güncellendi.");
+  }catch(e){ toast("JSON hatalı: " + e.message); }
+});
+document.getElementById("btn-reset-json").addEventListener("click", ()=>{
+  const sel = Number(document.getElementById("edit-station-select").value);
+  localStorage.removeItem("pq_custom_q_"+sel);
+  loadJsonEditor();
+  toast("Varsayılan sorulara dönüldü.");
+});
+document.getElementById("btn-reset-progress").addEventListener("click", ()=>{
+  if(confirm("Tüm ilerleme silinsin mi? Bu işlem geri alınamaz.")){
+    state = defaultState(); saveState(); renderTeacherPanel();
+    toast("İlerleme sıfırlandı.");
+  }
+});
+
+/* ============ PWA INSTALL + SERVICE WORKER ============ */
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById("install-fab").style.display = "flex";
+});
+document.getElementById("install-fab").addEventListener("click", async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById("install-fab").style.display = "none";
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+
+/* ============ INIT ============ */
+refreshChrome();
+renderHome();
+</script>
+</body>
+</html>
